@@ -1,9 +1,14 @@
 classdef MI_KSG_core
+    % MI_KSG_core is used to set up sets of simulations to determine an
+    % optimum k-value for a mutual information estimate and also calculates
+    % mutual information and estimation error.
+    
     properties
         k_values % array of k-values
         err_estimates % matrix of error estimates
         mi_estimates % matrix of mutual information estimates
-    end    
+    end
+    
     methods
         % These methods are used to interface with other classes for data
         % analysis and visualization
