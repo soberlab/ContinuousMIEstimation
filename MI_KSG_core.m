@@ -4,12 +4,31 @@ classdef MI_KSG_core
     % mutual information and estimation error.
     
     properties
+        x % matrix of x data
+        y % matrix of y data
         k_values % array of k-values
         err_estimates % matrix of error estimates
         mi_estimates % matrix of mutual information estimates
+        opt_k % optimized k value
     end
     
     methods
+        function obj = MI_KSG_core(x, y, ks_arr)
+            obj.x = x;
+            obj.y = y;
+            if nargin == 2
+                warning('Using default k-value of 3...');
+                obj.k_values = 3;
+                obj.opt_k = 3;
+            elseif nargin == 3
+                obj.k_values = ks_arr;
+                obj.opt_k = 0;
+            end
+            
+            err_estimates = [];
+            mi_estimates = [];
+        end
+        
         % These methods are used to interface with other classes for data
         % analysis and visualization
         function r = add_mi_estimate()
