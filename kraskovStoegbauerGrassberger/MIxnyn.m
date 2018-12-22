@@ -84,7 +84,7 @@ save(savestr, 'zwsp', '-ASCII');
 
 
 % execute C Programm
-[a unout]=unix(['MIxnyn ',savestr,' ',num2str(Ndx),' ',num2str(Ndy),' ',num2str(N),' ',num2str(kneig)]);
+[a unout]=unix(['./MIxnyn ',savestr,' ',num2str(Ndx),' ',num2str(Ndy),' ',num2str(N),' ',num2str(kneig)]);
 miout=str2num(unout);
 
 delete(savestr);
