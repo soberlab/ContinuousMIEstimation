@@ -72,13 +72,13 @@ classdef MI_KSG_sim_manager < handle
                 parfor i=1:length(sim_set)
                     tmp_sim_set = sim_set(i,:);
                     MI = MIxnyn(tmp_sim_set{1}, tmp_sim_set{2}, tmp_sim_set{3});
-                    sim_data(i,:) = {MI tmp_sim_set(3) tmp_sim_set(4) tmp_sim_set(5)};
+                    sim_data(i,:) = {MI/log(2) tmp_sim_set(3) tmp_sim_set(4) tmp_sim_set(5)};
                 end
             else
                 for i=1:length(sim_set)
                     tmp_sim_set = sim_set(i,:);
                     MI = MIxnyn(tmp_sim_set{1}, tmp_sim_set{2}, tmp_sim_set{3});
-                    sim_data(i,:) = {MI tmp_sim_set(3) tmp_sim_set(4) tmp_sim_set(5)};
+                    sim_data(i,:) = {MI/log(2) tmp_sim_set(3) tmp_sim_set(4) tmp_sim_set(5)};
                 end
             end
             

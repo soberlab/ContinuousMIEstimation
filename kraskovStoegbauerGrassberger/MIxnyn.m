@@ -92,7 +92,7 @@ else
     error('MIxnyn >> Unable to recognize operating system...');
 end
 
-    [a unout]=unix(unix_str);
+[a unout]=unix(unix_str);
 miout=str2num(unout);
 
 delete(savestr);
