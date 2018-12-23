@@ -35,7 +35,7 @@ classdef MI_KSG_core < handle
                 obj.opt_k = opt_k;
             end
             
-            add_sim(sim_obj, obj);
+            add_sim(sim_obj, obj); % add this core obj to sim_manager list
         end
         
         % These methods are used to interface with other classes for data
@@ -49,6 +49,7 @@ classdef MI_KSG_core < handle
                     r = cat(1, r, {obj.x obj.y obj.k_values(i)});
                 end
             else
+                % run MI calculation with error estimates
                 for i=1:length(obj.k_values)
                     r = cat(1, r, fractionate_data(obj, obj.k_values(i)));
                 end
@@ -56,25 +57,28 @@ classdef MI_KSG_core < handle
         end
         
         function set_core_data(obj, dataset)
-            data_keys = unique([dataset{:,3}]);
+            % take sim_manager MI calculations and process results
+            
+            data_keys = unique([dataset{:,3}]); % extract simulation keys
             tmp_mi_data = cell(0,4);
-            for key_ix = 1:length(data_keys)
-                tmp_match = strcmp([dataset{:,3}], data_keys(key_ix));
-                count = sum(tmp_match);
-                data_ixs = find(tmp_match == 1);
+            for key_ix = 1:length(data_keys) % iterate through each MI error estimation set
+                tmp_match = strcmp([dataset{:,3}], data_keys(key_ix)); % find MI calculations that correspond to same data fractions
+                count = sum(tmp_match); % determine number of data fractions
+                data_ixs = find(tmp_match == 1); % identify which simulations to include
                 
                 mi = [dataset{data_ixs,1}];
                 k = dataset{data_ixs(1),2};
                 
-                tmp_mi_data = cat(1, tmp_mi_data, {mean(mi) var(mi) count k{1}});
+                tmp_mi_data = cat(1, tmp_mi_data, {mean(mi) var(mi) count k{1}}); % append MI with error estimation
             end
             obj.mi_data = sortrows(tmp_mi_data,[4,3]);
         end
         
         function r = get_mi(obj, k)
             % get mutual information and error estimates
-            data_ixs = cell2mat(obj.mi_data(:,4)) == k;
+            data_ixs = cell2mat(obj.mi_data(:,4)) == k; % find MI calcs with k-value
             
+            % calculate estimated error
             listSplitSizes = cell2mat(obj.mi_data(data_ixs,3));
             MIs = cell2mat(obj.mi_data(data_ixs,1));
             listVariances = cell2mat(obj.mi_data(data_ixs,2));
@@ -83,6 +87,7 @@ classdef MI_KSG_core < handle
             k = listSplitSizes(2:end);
             variancePredicted = sum((k-1)./k.*listVariances)./sum((k-1));
 
+            % return MI value and error estimation
             r.mi = MIs(1);
             r.err = variancePredicted^.5;
         end
@@ -97,17 +102,19 @@ classdef MI_KSG_core < handle
             n = length(obj.x);
             r = cell(sum(1:obj.data_fracs),4);
             for frac_n = 1:obj.data_fracs
+                % determine length of subsample
                 a = randperm(n);
                 l = round(linspace(0,n,frac_n+1));
                 
-                while 1
+                while 1 % generate random key to keep track of which MI calculations belong together
                     key = num2str(dec2hex(round(rand(1)*100000)));
                     if ~any(strcmp(r(:,4), key))
                         break;
                     end
                 end
                     
-                for j=1:frac_n
+                % select subsample of data and assign data and params to data cell array
+                for j=1:frac_n 
                     xT = obj.x(a(l(j)+1:l(j+1)));
                     yT = obj.y(a(l(j)+1:l(j+1)));
                     r(sum(1:(frac_n-1))+j,:) = {xT yT k key};
