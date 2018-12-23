@@ -35,7 +35,7 @@ classdef MI_KSG_sim_manager < handle
             c = parcluster('local');
             obj.thread_count = c.NumWorkers;
             
-            if verbose > 1; disp(obj); end
+            if obj.verbose > 1; disp(obj); end
             
             % ===== ===== ===== ===== =====
             % Should a line be added to automatically determine whether it
@@ -72,8 +72,10 @@ classdef MI_KSG_sim_manager < handle
         function run_sims(obj)
             % run simulations in parallel or in serial
             
+            if obj.verbose > 0; disp('Running MI_KSG_sim_manager simulations...'); end
             % retrive simulation data and parameters from each mi_core object
             % populate single cell matrix of all data/params
+            if obj.verbose > 1; disp('>> Setting up simulations...'); end
             sim_set = cell(0,5);
             for i=1:size(obj.mi_core_arr,1)
                 [tmp_core, tmp_key] = obj.mi_core_arr{i,:};
@@ -83,6 +85,7 @@ classdef MI_KSG_sim_manager < handle
             end
             
             % run MI calculations
+            if obj.verbose > 1; disp('>> Running simulations...'); end
             sim_data = cell(size(sim_set,1),4); % pre-allocate memory
             if obj.par_mode > 0
                 parfor i=1:length(sim_set) % run simulations in parallel
@@ -99,6 +102,7 @@ classdef MI_KSG_sim_manager < handle
             end
             
             % return MI calculations to respective mi_core objects
+            if obj.verbose > 1; disp('>> Returning data to MI cores...'); end
             core_keys = unique([sim_data{:,4}]);
             for key_ix = 1:length(core_keys)
                 data_ixs = find(strcmp([sim_data{:,4}], core_keys(key_ix)) == 1); % find data entries that belong to core obj
