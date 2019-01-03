@@ -83,8 +83,16 @@ zwsp=[x;y]';
 save(savestr, 'zwsp', '-ASCII');
 
 
-% execute C Programm
-[a unout]=unix(['MIxnyn ',savestr,' ',num2str(Ndx),' ',num2str(Ndy),' ',num2str(N),' ',num2str(kneig)]);
+% execute C Program
+if ispc
+    unix_str = ['MIxnyn ',savestr,' ',num2str(Ndx),' ',num2str(Ndy),' ',num2str(N),' ',num2str(kneig)];
+elseif ismac
+    unix_str = ['./MIxnyn ',savestr,' ',num2str(Ndx),' ',num2str(Ndy),' ',num2str(N),' ',num2str(kneig)];
+else
+    error('MIxnyn >> Unable to recognize operating system...');
+end
+
+[a unout]=unix(unix_str);
 miout=str2num(unout);
 
 delete(savestr);
