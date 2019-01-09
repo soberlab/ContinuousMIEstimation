@@ -23,6 +23,8 @@ classdef MI_KSG_data
           obj.Ncycles = sum(cycle_ts, [INSERT DIMENSION]); 
           obj.bFs = pFS;
           obj.nFs = nFs;
+	  % BC: constructor function should simply set nFs and pFs to default values of 30,000 for both
+	  % BC: the other cell arrays should be set using functions like "add_neuron" or "add_behavior"
 
        end
 
