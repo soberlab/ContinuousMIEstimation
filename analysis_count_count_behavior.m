@@ -41,10 +41,6 @@ classdef analysis_count_count_behavior < MI_KSG_data_analysis
             % For this set the coeff will always be 1
             obj.coeffs = 1;
             
-            % Next run the MI calculation and k optimization
-            obj.kvalue = [INSERT RELEVANT CODE];
-            obj.MI = [INSERT RELEVANT CODE];
-            obj.error = [INSERT RELEVANT CODE];
             
         end
     end

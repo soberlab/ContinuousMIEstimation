@@ -13,6 +13,7 @@ classdef MI_KSG_data_analysis
         kvalues % 1 x n vector of k values, which will be found from the MIcore
         coeffs % 1 x n vector of probabilities for each subgroup
         errors % 1 x n vector of error for each MI subgroup- including error propogation
+        sim_manager % Sim manager reference object
         
     end
 
@@ -30,7 +31,17 @@ classdef MI_KSG_data_analysis
            end	   					     
        end
 
-       function findMIs(obj)
+       function findMIs(obj, verbose)
+           % Find x and y data to send to MIcore.
+           [xGroups, yGroups] = setXYvars(obj, verbose);
+           
+           %DECIDE- for or parfor (I think we need to just use for)
+           for iGroup = 1:length(xGroups)
+               x = xGroups{iGroup,1};
+               y = yGroups{iGroup,1};
+               core1 = MI_KSG_core(sim_manager, x, y, [3 4 5], -1);
+               run_sims(sim_manager);
+           end
 	 % Sets up an MIcore object to calculate the MI values, and pushes the
 	 % data from this object to the MIcore process. 
        end

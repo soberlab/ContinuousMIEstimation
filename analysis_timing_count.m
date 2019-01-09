@@ -52,12 +52,7 @@ classdef analysis_timing_count < MI_KSG_data_analysis
             
             %Document coeffs
             obj.coeffs = Coeffs;
-            
-                        
-            % Next run the MI calculation and k optimization
-            obj.kvalues = [INSERT RELEVANT CODE];
-            obj.MIs = [INSERT RELEVANT CODE];
-            obj.errors = [INSERT RELEVANT CODE];
+
             
         end
     end

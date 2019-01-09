@@ -71,19 +71,7 @@ classdef analysis_timing_timing_behavior < MI_KSG_data_analysis
             % Figure out how each subgroup is going to feed into the 
             % MI_sim_manager and set up the data for that (maybe via
             % different lists). 
-            
-
-
-            
-           
-            % Separate the pressure data into the same subgroups
-            
-            
-            % Next run the MI calculation and k optimization
-            obj.kvalues = [INSERT RELEVANT CODE];
-            obj.MIs = [INSERT RELEVANT CODE];
-            obj.errors = [INSERT RELEVANT CODE];
-            
+ 
         end
     end
 end

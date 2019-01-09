@@ -64,16 +64,7 @@ classdef analysis_timing_timing < MI_KSG_data_analysis
 
             % Calculate probabilities
             obj.coeffs = Coeffs;
-            
-           
-            % Separate the pressure data into the same subgroups
-            
-            
-            % Next run the MI calculation and k optimization
-            obj.kvalues = [INSERT RELEVANT CODE];
-            obj.MIs = [INSERT RELEVANT CODE];
-            obj.errors = [INSERT RELEVANT CODE];
-            
+
         end
     end
 end
