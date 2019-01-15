@@ -5,22 +5,22 @@ classdef MI_KSG_data
     properties
         neurons % 1 x N array of spike timing vectors- spike times in MS. 
                 % where N is the number of neurons recorded during this session. 
-        pressure % 1 x N vector of the continuous pressure where N is the total samples
+        behavior % 1 x N vector of the continuous pressure where N is the total samples
         breathTimes % 1 x N vector of onset times in MS of each breath cycle
                     % where N is the total number of breath cycles
         Nbreaths % integer which indicates length of breathTimes
-        pFs % sample frequency of pressure wave
+        bFs % sample frequency of pressure wave
         nFs % sample frequency of neural data  
     end
 
     methods
-       function obj = MI_KSG_data(dataFileName, nFs,pFs)
+       function obj = MI_KSG_data(nFs,pFs, neurons, pressure)
       % This function loads the spiking data raw pressure data and documents the sample frequencies
       % Note that I need to add the proper functions once Bryce sends me his code
           obj.neurons = neurons;
           obj.behavior = pressure;
-          obj.cycleTimes = cycle_ts;
-          obj.Ncycles = sum(cycle_ts, [INSERT DIMENSION]); 
+         % obj.cycleTimes = cycle_ts;
+         % obj.Ncycles = sum(cycle_ts, [INSERT DIMENSION]); 
           obj.bFs = pFs;
           obj.nFs = nFs;
 	  % BC: constructor function should simply set nFs and pFs to default values of 30,000 for both
@@ -78,19 +78,32 @@ classdef MI_KSG_data
            r = getTiming(dataNum,verbose);
            r = sum(~isnan(r));
        end
-       function r = getPressure(verbose)
-           %NOTE We may want to 
+       function r = getPressure(desiredLength, verbose)
+           % desiredLength- the number of pressure dimensions you want to
+           % include. 
+           
+           %NOTE We may want to run PCA or something else on the pressure
+           %waves.
+           % Currently this code resamples pressure data so that pressure
+           % data all the same length- meaning that we look at pressure
+           % values at consistent phases within the cycle. The user can
+           % specify the length. In Kyle's analysis, they take this a step
+           % further by looking at residual pressure. We can add that if we
+           % want. 
            % Converts from single pressure vector to matrix separated by
            % cycles
             % Convert cycle times from ms to samples
-         cycle_samples = obj.cycleTimes;
-         cycle_samples = cycle_samples./1000;
-         cycle_samples = cycle_samples .* obj.pFs;
+         cycle_times = obj.cycleTimes;
+         cycle_seconds = cycle_times./1000;
+         cycle_samples = cycle_seconds .* obj.pFs;
          cycle_lengths = diff(cycle_samples);
          p = obj.behavior;
-         cycle_pressure = nan(size(cycle_samples,1) -1,max(cycle_lengths));
+         nCycles = length(cycle_lengths);
+         cycle_pressure_wave = nan(nCycles, desiredLength);
          for cycle_ix = 1:size(cycle_samples,1)-1
-            cycle_pressure_wave(cycle_ix,1:cycle_lengths(cycle_ix)) = p(cycle_samples(cycle_ix):cycle_samples(cycle_ix+1));
+            cycle_pressure = p(cycle_samples(cycle_ix):cycle_samples(cycle_ix+1));
+            resampled_cycle_pressure = resample(cycle_pressure,desiredLength,cycle_lengths(cycle_ix));
+            cycle_pressure_wave(cycle_ix, 1:desiredLength) = resampled_cycle_pressure;
          end
           r = cycle_pressure_wave;
         end
