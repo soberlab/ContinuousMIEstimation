@@ -39,19 +39,19 @@ classdef MI_KSG_data_analysis
 	   % BC: Need to instantiate sim_manager object
        end
 
-       function findMIs(obj, verbose)
-           % Find x and y data to send to MIcore.
-           [xGroups, yGroups] = setXYvars(obj, verbose);
-           
-           %DECIDE- for or parfor (I think we need to just use for)
-	   % BC: Move his for loop into the constructor for MI_KSG_data_analysis subclasses
+      function findMIs(obj,xGroups, yGroups, Coeffs,verbose )
+	   % NOTE- we still need to change the default k-value for this. 
+	   % BC: Move his for loop into the constructor for MI_KSG_data_analysis subclasses- DONE
            for iGroup = 1:length(xGroups)
                x = xGroups{iGroup,1};
                y = yGroups{iGroup,1};
-	       % BC: Need to append new mi_core instance to the arrMICore object with associated information
+	       % BC: Need to append new mi_core instance to the arrMICore object with associated information- DONE
+% RC-  Is it a problem that we name the core object the same thing each iteration? 
                core1 = MI_KSG_core(sim_manager, x, y, [3 4 5], -1);
+	       obj.arrMIcore{1,1}{iGroup,1} = core1
 	       % BC: The obj.findMIs function basically calls run_sims
-               run_sims(sim_manager);
+	       % RC- so from my understanding, we do not need the following line of code. 
+%                run_sims(sim_manager);
            end
 	 % Sets up an MIcore object to calculate the MI values, and pushes the
 	 % data from this object to the MIcore process. 

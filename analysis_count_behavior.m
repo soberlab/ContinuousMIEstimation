@@ -8,35 +8,34 @@ classdef analysis_count_behavior < MI_KSG_data_analysis
     end
     
     methods
-        function obj = make_count_behavior(objData,var1,var2)
+       function obj = analysis_count_behavior(objData,var1,var2, verbose)
             % Construct an instance of this class
             %   Detailed explanation goes here
             obj =  MI_KSG_data_analysis(objData, var1, var2);
+            [xGroups,yGroups, Coeffs] = setParams(obj,pressureLength, verbose);
+            obj.arrMIcore{1,2} = Coeffs;
+            obj.findMIs(xGroups,yGroups,Coeffs,verbose);
+
         end
         
-        function [xGroups, yGroups] = setXYvars(obj)
+        function [xGroups, yGroups, Coeffs] = setParams(obj, pressureLength, verbose)
             % So I propose that we use this method to prep the
             % count_behavior data for the MI core and go ahead and run MI
             % core from here. Then we can use the output of MI core to fill
             % in the MI, kvalue, and errors.
             
             % First, segment neural data into breath cycles
-            x = objData.dataByCycles(var1,verbose);
+            x = objData.getCount(var1,verbose);
             
-            % Find total spike count in a cycle
-            x = sum(~isnan(x),2);
             xGroups{1,1} = x;
             
             % Next segment pressure data into cycles
-            y = objData.dataByCycles(var2,verbose);
+            y = objData.getPressure(pressureLength,verbose);
             yGroups{1,1} = y;
             
-            obj.coeffs = 1;
+            Coeffs = {1};
             
-            % Next run the MI calculation and k optimization
-            obj.kvalue = [INSERT RELEVANT CODE];
-            obj.MI = [INSERT RELEVANT CODE];
-            obj.error = [INSERT RELEVANT CODE];
+            
             
         end
     end
