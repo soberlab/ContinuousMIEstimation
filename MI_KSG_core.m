@@ -4,6 +4,8 @@ classdef MI_KSG_core < handle
     % mutual information and estimation error.
     
     properties
+        verbose % for debugging purposes
+        
         x % matrix of x data
         y % matrix of y data
         k_values % array of k-values
@@ -15,7 +17,8 @@ classdef MI_KSG_core < handle
     end
     
     methods
-        function obj = MI_KSG_core(sim_obj, x, y, ks_arr, opt_k)
+        function obj = MI_KSG_core(sim_obj, x, y, ks_arr, opt_k, verbose)
+            
             obj.x = x;
             obj.y = y;            
             obj.sim_obj = sim_obj;
@@ -24,15 +27,22 @@ classdef MI_KSG_core < handle
                 warning('Using default k-value of 3...');
                 obj.k_values = 3;
                 obj.opt_k = 3;
+                obj.verbose = 0;
             elseif nargin == 4
                 % Argument options for ks_arr
                 % int   calculate MI for k-value
                 % arr   calculate MI for multiple k-values
                 obj.k_values = ks_arr;
                 obj.opt_k = 0;
+                obj.verbose = 0;
             elseif nargin == 5
                 obj.k_values = ks_arr;
                 obj.opt_k = opt_k;
+                obj.verbose = 0;
+            elseif nargin == 5
+                obj.k_values = ks_arr;
+                obj.opt_k = opt_k;
+                obj.verbose = verbose;
             end
             
             add_sim(sim_obj, obj); % add this core obj to sim_manager list
