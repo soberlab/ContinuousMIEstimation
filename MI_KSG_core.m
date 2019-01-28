@@ -42,14 +42,23 @@ classdef MI_KSG_core < handle
         % analysis and visualization        
         function r = get_core_dataset(obj)
             % get cell array of data for MI calculation
-            r = {};
+            r = cell(0,4);
             if obj.opt_k < 0
                 % only run MI calculation without error estimate
                 for i=1:length(obj.k_values)
-                    r = cat(1, r, {obj.x obj.y obj.k_values(i)});
+                    while 1
+                        % generate unique key to track each simulation
+                        key = num2str(dec2hex(round(rand(1)*100000)));
+                        if ~any(strcmp(r(:,4), key))
+                            break;
+                        end
+                    end
+                    r = cat(1, r, {obj.x obj.y obj.k_values(i) key});
                 end
             else
                 for i=1:length(obj.k_values)
+                    % create datasets for data fractions with unique key
+                    % to track each simulation
                     r = cat(1, r, fractionate_data(obj, obj.k_values(i)));
                 end
             end 
@@ -66,6 +75,7 @@ classdef MI_KSG_core < handle
                 mi = [dataset{data_ixs,1}];
                 k = dataset{data_ixs(1),2};
                 
+                % set core data {mean variance data-fraction k-value}
                 tmp_mi_data = cat(1, tmp_mi_data, {mean(mi) var(mi) count k{1}});
             end
             obj.mi_data = sortrows(tmp_mi_data,[4,3]);
@@ -87,9 +97,22 @@ classdef MI_KSG_core < handle
             r.err = variancePredicted^.5;
         end
         
-%         function r = find_k_value(obj)
-%             % determine best k-value to use
-%         end
+        function r = find_k_value(obj)
+            % determine best k-value to use
+            
+            % find k-value that is least sensitive to changing k-value
+            
+            
+            % find k-value with stable data fractions
+            
+            
+            % flag over- or under-estmiate of MI
+            
+            
+            % provide some quantification of confidence?
+            
+            
+        end
         
         function r = fractionate_data(obj, k)
             % return cell array of fractionated datasets with x-data,
@@ -100,6 +123,7 @@ classdef MI_KSG_core < handle
                 a = randperm(n);
                 l = round(linspace(0,n,frac_n+1));
                 
+                % generate unique key to track each simulation
                 while 1
                     key = num2str(dec2hex(round(rand(1)*100000)));
                     if ~any(strcmp(r(:,4), key))
