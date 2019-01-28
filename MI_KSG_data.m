@@ -1,4 +1,4 @@
-classdef MI_KSG_data
+classdef MI_KSG_data < handle
     %  MI_KSG_data is used to set up a data object with all of the data
     %  for a given recording session
     % WE MAY WANT TO CHANGE PROPERTY NAMES TO GENERIC VARIABLES
@@ -22,11 +22,16 @@ classdef MI_KSG_data
                obj.bFs = pFs;
                obj.nFs = nFs;
            end
+           
+           obj.neurons = {};
        end
        
        function add_spikes(obj, spike_times)
            % BC-20190123: Added function
            obj.neurons{end+1} = spike_times;
+           
+           % BC-20190123: Can add an index to neurons for explicit tracking
+           % across classes?
        end
        
        function add_behavior(obj, behavior)
