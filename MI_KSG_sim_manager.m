@@ -15,8 +15,6 @@ classdef MI_KSG_sim_manager < handle
     end
     methods
         function obj = MI_KSG_sim_manager(mode, verbose)
-            if verbose > 0; disp('Initializing MI_KSG_sim_manager...'); end
-            
             if nargin == 1
                 % initialize parallel mode and default to no output
                 obj.par_mode = mode;
@@ -30,6 +28,8 @@ classdef MI_KSG_sim_manager < handle
                 obj.par_mode = true;
                 obj.verbose = 0;
             end
+            
+            if obj.verbose > 0; disp('Initializing MI_KSG_sim_manager...'); end
             
             % determine number of available cores
             c = parcluster('local');
@@ -88,24 +88,24 @@ classdef MI_KSG_sim_manager < handle
             if obj.verbose > 1; disp('>> Running simulations...'); end
             sim_data = cell(size(sim_set,1),4); % pre-allocate memory
             if obj.par_mode > 0
-                parfor i=1:length(sim_set) % run simulations in parallel
+                parfor i=1:size(sim_set,1) % run simulations in parallel
                     tmp_sim_set = sim_set(i,:); % needed for parfor
                     MI = MIxnyn(tmp_sim_set{1}, tmp_sim_set{2}, tmp_sim_set{3}); % run MI calculation
-                    sim_data(i,:) = {MI/log(2) tmp_sim_set(3) tmp_sim_set(4) tmp_sim_set(5)}; % add results with params/index to data set
+                    sim_data(i,:) = {MI/log(2) tmp_sim_set{3} tmp_sim_set{4} tmp_sim_set{5}}; % add results with params/index to data set
                 end
             else
-                for i=1:length(sim_set)
+                for i=1:size(sim_set,1)
                     tmp_sim_set = sim_set(i,:); % for convenience
                     MI = MIxnyn(tmp_sim_set{1}, tmp_sim_set{2}, tmp_sim_set{3}); % run MI calculation
-                    sim_data(i,:) = {MI/log(2) tmp_sim_set(3) tmp_sim_set(4) tmp_sim_set(5)}; % add results with params/index to data set
+                    sim_data(i,:) = {MI/log(2) tmp_sim_set{3} tmp_sim_set{4} tmp_sim_set{5}}; % add results with params/index to data set
                 end
             end
             
             % return MI calculations to respective mi_core objects
             if obj.verbose > 1; disp('>> Returning data to MI cores...'); end
-            core_keys = unique([sim_data{:,4}]);
+            core_keys = unique(sim_data(:,4));
             for key_ix = 1:length(core_keys)
-                data_ixs = find(strcmp([sim_data{:,4}], core_keys(key_ix)) == 1); % find data entries that belong to core obj
+                data_ixs = find(strcmp(sim_data(:,4), core_keys{key_ix}) == 1); % find data entries that belong to core obj
                 core_ix = find(strcmp([obj.mi_core_arr(:,2)], core_keys(key_ix)) == 1); % find core obj in list of mi_core
                 set_core_data(obj.mi_core_arr{core_ix}, sim_data(data_ixs,1:3)); % send data back to respective mi_core objs
             end
