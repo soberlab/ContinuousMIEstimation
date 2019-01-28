@@ -52,11 +52,17 @@ classdef MI_KSG_core < handle
         % analysis and visualization        
         function r = get_core_dataset(obj)
             % get cell array of data for MI calculation
-            r = {};
+            r = cell(0,4);
             if obj.opt_k < 0
                 % only run MI calculation without error estimate
-                for i=1:length(obj.k_values)
-                    r = cat(1, r, {obj.x obj.y obj.k_values(i)});
+                for i=1:length(obj.k_values) 
+                    while 1 % generate random key to keep track of which MI calculations belong together
+                        key = num2str(dec2hex(round(rand(1)*100000)));
+                        if ~any(strcmp(r(:,4), key))
+                            break;
+                        end
+                    end
+                    r = cat(1, r, {obj.x obj.y obj.k_values(i) key});
                 end
             else
                 % run MI calculation with error estimates
@@ -69,17 +75,17 @@ classdef MI_KSG_core < handle
         function set_core_data(obj, dataset)
             % take sim_manager MI calculations and process results
             
-            data_keys = unique([dataset{:,3}]); % extract simulation keys
+            data_keys = unique([dataset(:,3)]); % extract simulation keys
             tmp_mi_data = cell(0,4);
             for key_ix = 1:length(data_keys) % iterate through each MI error estimation set
-                tmp_match = strcmp([dataset{:,3}], data_keys(key_ix)); % find MI calculations that correspond to same data fractions
+                tmp_match = strcmp([dataset(:,3)], data_keys(key_ix)); % find MI calculations that correspond to same data fractions
                 count = sum(tmp_match); % determine number of data fractions
                 data_ixs = find(tmp_match == 1); % identify which simulations to include
                 
                 mi = [dataset{data_ixs,1}];
                 k = dataset{data_ixs(1),2};
                 
-                tmp_mi_data = cat(1, tmp_mi_data, {mean(mi) var(mi) count k{1}}); % append MI with error estimation
+                tmp_mi_data = cat(1, tmp_mi_data, {mean(mi) var(mi) count k}); % append MI with error estimation
             end
             obj.mi_data = sortrows(tmp_mi_data,[4,3]);
         end
