@@ -1,4 +1,4 @@
-classdef mi_isi_isi < mi_analysis
+classdef calc_isi_isi < mi_analysis
     %Each of these objects sets the stage to calculate the mutual
     %information between spike count and behavior and stores the results of
     %the calculation. 
@@ -9,7 +9,7 @@ classdef mi_isi_isi < mi_analysis
     end
     
     methods
-        function obj = mi_isi_isi(objData, vars, isi_cutoff, verbose)
+        function obj = calc_isi_isi(objData, vars, isi_cutoff, verbose)
             % var1 is a positive integer to indicate neuron number
             
             % BC 20190124: ADD CHECK TO SEE IF vars INCLUDES NEURONS FROM objData
