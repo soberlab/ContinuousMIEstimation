@@ -1,4 +1,4 @@
-classdef calc_timing_timing < MI_KSG_data_analysis
+classdef calc_timing_timing < mi_analysis
     %Each of these objects sets the stage to calculate the mutual
     %information between spike timing of neuron 1 and spike timing of neuron 2 and stores the results of
     %the calculation. 
@@ -15,7 +15,7 @@ classdef calc_timing_timing < MI_KSG_data_analysis
        function obj = calc_timing_timing(objData,var1,var2, verbose)
             % var1- positive integer (neuron number)
             % var2- positive integer (neuron number)
-            obj =  MI_KSG_data_analysis(objData, var1, var2);
+            obj =  mi_analysis(objData, var1, var2);
 % Set parameters for calculations
             [xGroups,yGroups, Coeffs] = setParams(obj,pressureLength, verbose);
             arrMIcore{1,2} = Coeffs;
