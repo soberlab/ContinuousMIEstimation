@@ -24,7 +24,7 @@ classdef MI_KSG_data_viz < handle
             
             xlabel('Data Fraction (1/N)');
             ylabel('Mutual Information');
-            title({'Kraskov-Stoegbauer-Grassberger' 'Data Fraction'});
+            title({'Kraskov-Stoegbauer-Grassberger' ['Data Fraction for k = ' num2str(k)]});
             
             xlim([min(xs)*0.8 max(xs)*1.1]);
             

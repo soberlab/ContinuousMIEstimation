@@ -73,7 +73,8 @@ end
 
 
 % save data for C-Programm
-
+% generate random file name to allow multiple instances of MIxnyn.exe to
+% run simultaneously
 savestr = ['zwspMIxnyn-' num2str(dec2hex(round(rand(1)*100000))) '.txt'];
 while isfile(savestr)
     savestr = ['zwspMIxnyn-' num2str(dec2hex(round(rand(1)*100000))) '.txt'];
@@ -84,6 +85,7 @@ save(savestr, 'zwsp', '-ASCII');
 
 
 % execute C Program
+% check OS to determine how to call UNIX command
 if ispc
     unix_str = ['MIxnyn ',savestr,' ',num2str(Ndx),' ',num2str(Ndy),' ',num2str(N),' ',num2str(kneig)];
 elseif ismac
