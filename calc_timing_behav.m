@@ -1,4 +1,4 @@
-classdef mi_timing_behav < MI_KSG_data_analysis
+classdef calc_timing_behav < MI_KSG_data_analysis
     %Each of these objects sets the stage to calculate the mutual
     %information between spike count and behavior and stores the results of
     %the calculation. 
@@ -8,7 +8,7 @@ classdef mi_timing_behav < MI_KSG_data_analysis
     end
     
     methods
-       function obj = mi_timing_behav(objData,var1,var2, verbose)
+       function obj = calc_timing_behav(objData,var1,var2, verbose)
             % var1- positive integer (neuron number)
             % var2- -1 (indicating pressure)
             obj =  MI_KSG_data_analysis(objData, var1, var2);
