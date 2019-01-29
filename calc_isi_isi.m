@@ -6,22 +6,25 @@ classdef calc_isi_isi < mi_analysis
     
     properties
         isi_cutoff % ms
+        isi_offset % number of ISIs to offset
     end
     
     methods
-        function obj = calc_isi_isi(objData, vars, isi_cutoff, verbose)
+        function obj = calc_isi_isi(objData, vars, isi_offset, isi_cutoff, verbose)
             % var1 is a positive integer to indicate neuron number
             
             % BC 20190124: ADD CHECK TO SEE IF vars INCLUDES NEURONS FROM objData
             
-            if nargin < 3; isi_cutoff = 200; end
-            if nargin < 4; verbose = 1; end
+            if nargin < 3; isi_offset = 1; end
+            if nargin < 4; isi_cutoff = 200; end
+            if nargin < 5; verbose = 1; end
             
             if length(vars) > 1
                 error('Expected one variable specified.');
             end
             
-            obj@MI_KSG_data_analysis(objData, vars);
+            obj@mi_analysis(objData, vars);
+            obj.isi_offset = isi_offset;
             obj.isi_cutoff = isi_cutoff;
             obj.verbose = verbose;            
         end
@@ -52,17 +55,18 @@ classdef calc_isi_isi < mi_analysis
             % BRYCE- can you verify that this is correct? 
             ISIs = ISIs(find(ISIs < obj.isi_cutoff));
             
+            offset = obj.isi_offset;
             % Make a vector of the first ISIs
-            x = ISIs(1:end-1);
+            x = ISIs(1:end-offset);
             xGroups{1,1} = x;
             
             % Make a vector of the second ISIs
-            y = ISIs(2:end);
+            y = ISIs(offset+1:end);
             yGroups{1,1} = y;
             
             coeffs = {1};
             
-            buildMIs@MI_KSG_data_analysis(obj, {xGroups yGroups coeffs}, verbose);
+            buildMIs@mi_analysis(obj, {xGroups yGroups coeffs}, verbose);
         end
     end
 end
