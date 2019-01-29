@@ -1,4 +1,4 @@
-classdef MI_KSG_sim_manager < handle
+classdef mi_ksg_sims < handle
     % MI_KSG_sim_manager provides a structure within which mutual
     % information calculations can be run in parallel. MI_core objects are
     % added to a list and sim_manager then sets up a "master list" of data
@@ -14,7 +14,7 @@ classdef MI_KSG_sim_manager < handle
         par_mode % flag to run in parallel mode
     end
     methods
-        function obj = MI_KSG_sim_manager(mode, verbose)
+        function obj = mi_ksg_sims(mode, verbose)
             if nargin == 1
                 % initialize parallel mode and default to no output
                 obj.par_mode = mode;

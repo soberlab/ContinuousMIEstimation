@@ -1,4 +1,4 @@
-classdef analysis_timing_timing_behavior < MI_KSG_data_analysis
+classdef calc_timing_timing < mi_analysis
     %Each of these objects sets the stage to calculate the mutual
     %information between spike timing of neuron 1 and spike timing of neuron 2 and stores the results of
     %the calculation. 
@@ -12,72 +12,65 @@ classdef analysis_timing_timing_behavior < MI_KSG_data_analysis
     end
     
     methods
-       function obj = analysis_timing_behavior(objData,var1,var2, var3, verbose)
+       function obj = calc_timing_timing(objData,var1,var2, verbose)
             % var1- positive integer (neuron number)
             % var2- positive integer (neuron number)
-            % var3 - -1 for pressure
-            obj =  MI_KSG_data_analysis(objData, var1, var2, var3);
+            obj =  mi_analysis(objData, var1, var2);
+% Set parameters for calculations
             [xGroups,yGroups, Coeffs] = setParams(obj,pressureLength, verbose);
-	    obj.arrMIcore{1,2} = Coeffs;
+            arrMIcore{1,2} = Coeffs;
+% Set MIs
             obj.findMIs(xGroups,yGroups,Coeffs,verbose);
-
-
         end
         
-        function [xGroups, yGroups, Coeffs] = setParams(obj,pressureLength verbose)
+       function [xGroups, yGroups, Coeffs] = setParams(obj, verbose)
             % So I propose that we use this method to prep the
             % count_behavior data for the MI core and go ahead and run MI
             % core from here. Then we can use the output of MI core to fill
             % in the MI, kvalue, and errors.
             
             % First, segment neural data into breath cycles
-            n1 = objData.getTiming(var1,verbose);
+            x = objData.getTiming(var1,verbose);
            
             % Find different subgroups for neuron 1
-            n1Counts = objData.getCount(var1,verbose);
-            n1Conds = unique(n1Counts);
+            xCounts = objData.getCount(var1,verbose);
+            xConds = unique(xCounts);
 
             % Segment neuron 2 into breath cycles
-            n2 = objData.getTiming(var2,verbose);
+            y = objData.dataByCycles(var2,verbose);
 
             % Find different subgroups for neuron 2
-            n2Counts = objData.getCount(var2,verbose);
-            n2Conds = unique(n2Counts);
-            
-            % Segment behavioral data into cycles
-            y = objData.getPressure(pressureLength, verbose);
-            
-            %Both neurons collectively will make up the x group. We will
-            %concatonate each condition. 
+            yCounts = getCount(var2,verbose);
+            yConds = unique(yCounts);
+
             xGroups = {};
             yGroups = {};
             Coeffs = {};
             groupCounter = 1;
-            for in1Group = 1:length(n1Conds)
-                in1Cond = n1Conds(in1Group);
-                n1groupIdx = find(n1Counts == in1Cond);
-                for in2Group = 1:length(n2Conds)
-                    in2Cond = n2Conds(in2Group);
-                    n2groupIdx = find(n2Counts == in2Cond);
-                    xgroupIdx = intersect(n1groupIdx,n2groupIdx);
-                    n1Group = n1(xgroupIdx,1:in1Cond);
-                    n2Group = n2(xgroupIdx,1:in2Cond);
-                    xGroup = [n1Group,n2Group];
+            for ixGroup = 1:length(xConds)
+                ixCond = xConds(ixGroup);
+                xgroupIdx = find(xCounts == ixCond);
+                for iyGroup = 1:length(yConds)
+                    iyCond = yConds(iyGroup);
+                    ygroupIdx = find(yCounts == iyCond);
+                    xygroupIdx = intersect(xgroupIdx,ygroupIdx);
+                    xGroup = x(xygroupIdx,1:ixCond);
                     xGroups{groupCounter,1} = xGroup;
-                    yGroup = y(xgroupIdx,1:end);
+                    yGroup = y(xygroupIdx,1:iyCond);
                     yGroups{groupCounter,1} = yGroup;
-                    Coeffs{groupCounter,1} = length(xgroupIdx))/length(n1Counts);
+                    Coeffs{groupCounter,1} = length(xygroupIdx))/length(xCounts);
                     groupCounter = groupCounter + 1;
                 end
             end
-
-
-            % From here, each entry in xGroups and yGroups will feed into
-            % the MI calculator. 
+            
             % Figure out how each subgroup is going to feed into the 
             % MI_sim_manager and set up the data for that (maybe via
             % different lists). 
- 
+            
+
+
+
+
         end
     end
 end

@@ -1,4 +1,4 @@
-classdef MI_KSG_core < handle
+classdef mi_ksg_core < handle
     % MI_KSG_core is used to set up sets of simulations to determine an
     % optimum k-value for a mutual information estimate and also calculates
     % mutual information and estimation error.
@@ -17,7 +17,7 @@ classdef MI_KSG_core < handle
     end
     
     methods
-        function obj = MI_KSG_core(sim_obj, x, y, ks_arr, opt_k, verbose)
+        function obj = mi_ksg_core(sim_obj, x, y, ks_arr, opt_k, verbose)
             
             obj.x = x;
             obj.y = y;            
