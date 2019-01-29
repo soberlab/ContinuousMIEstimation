@@ -13,22 +13,20 @@ neural_data = mi_data(30000,30000);
 add_spikes(neural_data, ts);
 
 % Instantiate analysis object(s)
-MI_isi = calc_isi_isi(neural_data, [1]);
+MI_isi = calc_isi_isi(neural_data, [1], 1, 200);
 
 buildMIs(MI_isi);
 
 % --> update k-values, etc.
 
+MI_isi.arrMIcore{1}.opt_k = 0;
+
+% Run mutual information calculations
 calcMIs(MI_isi);
-
-%sim_manager = MI_KSG_sim_manager;
-
-%core1 = MI_KSG_core(sim_manager, isi(1:end-1), isi(2:end), [3 4 5], -1);
-
-%run_sims(sim_manager);
 
 
 %% MAKE DATA PLOTS
+core1 = MI_isi.arrMIcore{1};
 viz = mi_ksg_viz;
 
 make_ksg_graph(viz, core1);
