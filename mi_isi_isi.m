@@ -41,6 +41,11 @@ classdef mi_isi_isi < mi_analysis
             
             % BC-20190129: DO WE NEED TO REWRITE THIS CODE FOR INCREASED FLEXIBILITY...
             % WE CAN REWRITE IT SO THAT IT CAN TAKE THE MI BETWEEN ANY TWO SERIES OF ISI... ?
+            % For example:
+            % - interspike intervals within same spike train but with varying time delays
+            % --> ISI_n | ISI_n+1
+            % --> ISI_n | ISI_n+2
+            % --> ISI_n | ISI_n+3
             
             % Find ISIs from spike times
             ISIs = diff(spikeTimes);
