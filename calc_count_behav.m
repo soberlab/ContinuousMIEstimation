@@ -1,4 +1,4 @@
-classdef calc_count_behav < MI_KSG_data_analysis
+classdef calc_count_behav < mi_analysis
     %Each of these objects sets the stage to calculate the mutual
     %information between spike count and behavior and stores the results of
     %the calculation. 
@@ -11,7 +11,7 @@ classdef calc_count_behav < MI_KSG_data_analysis
        function obj = calc_count_behav(objData,var1,var2, verbose)
             % Construct an instance of this class
             %   Detailed explanation goes here
-            obj =  MI_KSG_data_analysis(objData, var1, var2);
+            obj =  mi_analysis(objData, var1, var2);
             [xGroups,yGroups, Coeffs] = setParams(obj,pressureLength, verbose);
             obj.arrMIcore{1,2} = Coeffs;
             obj.findMIs(xGroups,yGroups,Coeffs,verbose);
