@@ -33,7 +33,7 @@ classdef mi_analysis < handle
             end	   
 	   
             obj.arrMIcore = {};
-            obj.sim_manager = MI_KSG_sim_manager();
+            obj.sim_manager = mi_ksg_sims();
         end
 
         function buildMIs(obj, mi_data, verbose)
@@ -59,7 +59,7 @@ classdef mi_analysis < handle
                     end
                 end
                 
-                core1 = MI_KSG_core(obj.sim_manager, x, y, [3 4 5], -1);
+                core1 = mi_ksg_core(obj.sim_manager, x, y, [3 4 5], -1);
 	            obj.arrMIcore(iGroup,:) = {core1 coeffs{iGroup,1} 0 key};
 	            % BC: The obj.findMIs function basically calls run_sims
 	            % RC- so from my understanding, we do not need the following line of code. 
