@@ -13,11 +13,11 @@ ts = spikedata.ts(:,1)*1000;
 
 
 % Instantiate data object
-neural_data = MI_KSG_data(30000,30000);
+neural_data = mi_data(30000,30000);
 add_spikes(neural_data, ts);
 
-%% Instantiate analysis object(s)
-MI_isi = analysis_ISI1_ISI2(neural_data, [1]);
+% Instantiate analysis object(s)
+MI_isi = calc_isi_isi(neural_data, [1]);
 
 buildMIs(MI_isi);
 
@@ -33,7 +33,7 @@ calcMIs(MI_isi);
 
 
 %% MAKE DATA PLOTS
-viz = MI_KSG_data_viz;
+viz = mi_ksg_viz;
 
 make_ksg_graph(viz, core1);
 plot_k_dependence(viz, core1);

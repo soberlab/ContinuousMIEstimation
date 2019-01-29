@@ -1,4 +1,4 @@
-classdef analysis_ISI1_ISI2 < MI_KSG_data_analysis
+classdef calc_isi_isi < mi_analysis
     %Each of these objects sets the stage to calculate the mutual
     %information between spike count and behavior and stores the results of
     %the calculation. 
@@ -9,7 +9,10 @@ classdef analysis_ISI1_ISI2 < MI_KSG_data_analysis
     end
     
     methods
-        function obj = analysis_ISI1_ISI2(objData, vars, isi_cutoff, verbose)
+
+
+        function obj = calc_isi_isi(objData, vars, isi_cutoff, verbose)
+            % var1 is a positive integer to indicate neuron number
             
             % BC 20190124: ADD CHECK TO SEE IF vars INCLUDES NEURONS FROM objData
             
@@ -37,6 +40,14 @@ classdef analysis_ISI1_ISI2 < MI_KSG_data_analysis
             
             % First, get spike times from neuron
             spikeTimes = obj.objData.neurons{obj.vars(1)};
+            
+            % BC-20190129: DO WE NEED TO REWRITE THIS CODE FOR INCREASED FLEXIBILITY...
+            % WE CAN REWRITE IT SO THAT IT CAN TAKE THE MI BETWEEN ANY TWO SERIES OF ISI... ?
+            % For example:
+            % - interspike intervals within same spike train but with varying time delays
+            % --> ISI_n | ISI_n+1
+            % --> ISI_n | ISI_n+2
+            % --> ISI_n | ISI_n+3
             
             % Find ISIs from spike times
             ISIs = diff(spikeTimes);

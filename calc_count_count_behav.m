@@ -1,4 +1,4 @@
-classdef analysis_count_count_behavior < MI_KSG_data_analysis
+classdef calc_count_count_behav < mi_analysis
     %Each of these objects sets the stage to calculate the mutual
     %information between spike count and behavior and stores the results of
     %the calculation. 
@@ -8,10 +8,10 @@ classdef analysis_count_count_behavior < MI_KSG_data_analysis
     end
     
     methods
-      function obj = analysis_count_count(objData,var1,var2,var3, verbose)
+      function obj = calc_count_count_behav(objData,var1,var2,var3, verbose)
             % var1- positive integer (neuron number)
             % var2- positive integer (neuron number)
-            obj =  MI_KSG_data_analysis(objData, var1, var2, var3);
+            obj =  mi_analysis(objData, var1, var2, var3);
             [xGroups,yGroups, Coeffs] = setParams(obj,pressureLength, verbose);
             obj.arrMIcore{1,2} = Coeffs;
             obj.findMIs(xGroups,yGroups,Coeffs,verbose);

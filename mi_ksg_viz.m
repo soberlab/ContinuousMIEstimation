@@ -1,4 +1,4 @@
-classdef MI_KSG_data_viz < handle
+classdef mi_ksg_viz < handle
     properties
         
     end
