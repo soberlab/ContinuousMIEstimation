@@ -1,4 +1,4 @@
-classdef MI_KSG_data_analysis < handle
+classdef mi_ksg_analysis < handle
     %  MI_KSG_data_analysis is a parent class used to set up a separate object for each pair of variables to feed into the MI calculations
     % 
     properties
@@ -18,7 +18,7 @@ classdef MI_KSG_data_analysis < handle
     end
 
     methods
-        function obj = MI_KSG_data_analysis(objData, vars)
+        function obj = mi_ksg_analysis(objData, vars)
             % This funtion inputs the data object reference and variable references
             if nargin == 2
                 % BC 20190124: Design choice needs to be made....
