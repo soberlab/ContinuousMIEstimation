@@ -1,4 +1,4 @@
-classdef mi_ksg_data < handle
+classdef mi_data < handle
     %  MI_KSG_data is used to set up a data object with all of the data
     %  for a given recording session
     % WE MAY WANT TO CHANGE PROPERTY NAMES TO GENERIC VARIABLES
@@ -15,7 +15,7 @@ classdef mi_ksg_data < handle
     end
 
     methods
-       function obj = mi_ksg_data(nFs,pFs)
+       function obj = mi_data(nFs,pFs)
            % This function loads the spiking data raw pressure data and documents the sample frequencies
            % Note that I need to add the proper functions once Bryce sends me his code  
            if nargin > 0
