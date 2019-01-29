@@ -1,4 +1,4 @@
-classdef calc_timing_count_behav < MI_KSG_data_analysis
+classdef calc_timing_count_behav < mi_analysis
     %Each of these objects sets the stage to calculate the mutual
     %information between spike timing of neuron 1 and spike timing of neuron 2 and stores the results of
     %the calculation. 
@@ -16,7 +16,7 @@ classdef calc_timing_count_behav < MI_KSG_data_analysis
             % var1- positive integer (neuron number)- timing neuron
             % var2- positive integer (neuron number)- count neuron
             % var3 - -1 for pressure
-            obj =  MI_KSG_data_analysis(objData, var1, var2, var3);
+            obj =  mi_analysis(objData, var1, var2, var3);
             [xGroups,yGroups, Coeffs] = setParams(obj,pressureLength, verbose);
             obj.arrMIcore{1,2} = Coeffs;
             obj.findMIs(xGroups,yGroups,Coeffs,verbose);
