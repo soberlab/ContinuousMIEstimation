@@ -10,7 +10,6 @@ classdef analysis_ISI1_ISI2 < MI_KSG_data_analysis
     
     methods
         function obj = analysis_ISI1_ISI2(objData, vars, isi_cutoff, verbose)
-            % var1 is a positive integer to indicate neuron number
             
             % BC 20190124: ADD CHECK TO SEE IF vars INCLUDES NEURONS FROM objData
             
@@ -41,7 +40,7 @@ classdef analysis_ISI1_ISI2 < MI_KSG_data_analysis
             
             % Find ISIs from spike times
             ISIs = diff(spikeTimes);
-            % BRYCE- can you verify that this is correct? 
+            % Check ISIs against cutoff. 
             ISIs = ISIs(find(ISIs < obj.isi_cutoff));
             
             % Make a vector of the first ISIs

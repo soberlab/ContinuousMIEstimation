@@ -16,8 +16,7 @@ classdef MI_KSG_data < handle
 
     methods
        function obj = MI_KSG_data(nFs,pFs)
-           % This function loads the spiking data raw pressure data and documents the sample frequencies
-           % Note that I need to add the proper functions once Bryce sends me his code  
+           % This function documents the sample frequencies 
            if nargin > 0
                obj.bFs = pFs;
                obj.nFs = nFs;

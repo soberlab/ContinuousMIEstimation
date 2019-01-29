@@ -8,9 +8,13 @@ classdef analysis_count_count < MI_KSG_data_analysis
     end
     
     methods
-       function obj = analysis_count_behavior(objData,var1,var2, verbose)
+   function obj = analysis_count_behavior(objData,vars, verbose)
             % Construct an instance of this class
             %   Detailed explanation goes here
+  if nargin < 3; verbose = 1; end
+  if length(vars) ~= 2
+error('Expected two variables specified');
+end
             obj =  MI_KSG_data_analysis(objData, var1, var2);
             [xGroups,yGroups, Coeffs] = setParams(obj,pressureLength, verbose);
             obj.arrMIcore{1,2} = Coeffs;

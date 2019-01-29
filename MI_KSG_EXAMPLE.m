@@ -2,7 +2,11 @@
 close('all');
 
 % Load spike times
-load('bl21lb21_171218_spikedata-0002-CH5.mat');
+% BC: 
+% load('bl21lb21_171218_spikedata-0002-CH5.mat');
+
+% RC:
+load('bl21lb21_171218_dtvw-0002.mat')
 ts = spikedata.ts(:,1)*1000;
 
 % Load pressure data
@@ -12,12 +16,12 @@ ts = spikedata.ts(:,1)*1000;
 neural_data = MI_KSG_data(30000,30000);
 add_spikes(neural_data, ts);
 
-% Instantiate analysis object(s)
+%% Instantiate analysis object(s)
 MI_isi = analysis_ISI1_ISI2(neural_data, [1]);
 
 buildMIs(MI_isi);
 
-% --> update k-values, etc.
+%% --> update k-values, etc.
 
 calcMIs(MI_isi);
 
