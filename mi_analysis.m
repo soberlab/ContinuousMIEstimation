@@ -15,6 +15,7 @@ classdef mi_analysis < handle
         arrMIcore % Reference to MIcore object 
 	
         sim_manager % Sim manager reference object
+        notes % Optional property, used to indicate how much data has been omitted
     end
 
     methods
@@ -33,7 +34,9 @@ classdef mi_analysis < handle
             end	   
 	   
             obj.arrMIcore = {};
-            obj.sim_manager = MI_KSG_sim_manager();
+            % FOR RC 20190129:
+            obj.sim_manager = mi_ksg_sims(0,1);
+            %obj.sim_manager = mi_ksg_sims();
         end
 
         function buildMIs(obj, mi_data, verbose)
@@ -45,7 +48,7 @@ classdef mi_analysis < handle
             yGroups = mi_data{2};
             coeffs = mi_data{3};
             
-            for iGroup = 1:size(mi_data,1)
+            for iGroup = 1:size(xGroups,1)
                 x = xGroups{iGroup,1};
                 y = yGroups{iGroup,1};
 	          
@@ -56,13 +59,15 @@ classdef mi_analysis < handle
                     key = num2str(dec2hex(round(rand(1)*100000)));
                     % break the while loop if the key has not already been
                     % assigned.
-                    if ~any(strcmp(obj.arrMIcore{:,4}, key))
-                        break;
+                    if iGroup == 1
+                        break
+                    elseif ~ismember({obj.arrMIcore{1:end,4}}, key)
+                        break
                     end
                 end
                 % RC: Why do we set the k values in the core object and in
                 % the arrMIcore?
-                core1 = MI_KSG_core(obj.sim_manager, x, y, [3 4 5], -1);
+                core1 = mi_ksg_core(obj.sim_manager, x, y, [3 4 5], -1);
 	            obj.arrMIcore(iGroup,:) = {core1 coeffs{iGroup,1} 0 key};
 	            % BC: The obj.findMIs function basically calls run_sims
             end

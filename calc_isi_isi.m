@@ -23,7 +23,7 @@ classdef calc_isi_isi < mi_analysis
                 error('Expected one variable specified.');
             end
             
-            obj@MI_KSG_data_analysis(objData, vars);
+            obj@mi_analysis(objData, vars);
             obj.isi_cutoff = isi_cutoff;
             obj.verbose = verbose;            
         end
@@ -64,7 +64,7 @@ classdef calc_isi_isi < mi_analysis
             
             coeffs = {1};
             
-            buildMIs@MI_KSG_data_analysis(obj, {xGroups yGroups coeffs}, verbose);
+            buildMIs@mi_analysis(obj, {xGroups yGroups coeffs}, verbose);
         end
     end
 end
