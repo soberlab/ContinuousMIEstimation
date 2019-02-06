@@ -8,24 +8,27 @@ classdef calc_count_behav < mi_analysis
     end
     
     methods
-       function obj = calc_count_behav(objData,var1,var2, verbose)
-            % Construct an instance of this class
-            %   Detailed explanation goes here
-            obj =  mi_analysis(objData, var1, var2);
-            [xGroups,yGroups, Coeffs] = setParams(obj,pressureLength, verbose);
-            obj.arrMIcore{1,2} = Coeffs;
-            obj.findMIs(xGroups,yGroups,Coeffs,verbose);
+       function obj = calc_count_behav(objData,vars, verbose)
+           if nargin < 3; obj.verbose = 1; end
+           if length(vars) ~= 1
+	       error('Expected one variable specified')
+	   end
+
+           obj@mi_analysis(objData, vars);
 
         end
         
-        function [xGroups, yGroups, Coeffs] = setParams(obj, pressureLength, verbose)
-            % So I propose that we use this method to prep the
-            % count_behavior data for the MI core and go ahead and run MI
-            % core from here. Then we can use the output of MI core to fill
-            % in the MI, kvalue, and errors.
-            
+        function buildMIs(obj, pressureLength, verbose)
+            if nargin < 2
+                pressureLength = 200;
+                verbose = obj.verbose;
+            elseif nargin < 3
+                verbose = obj.verbose;
+            end
+
             % First, segment neural data into breath cycles
-            x = objData.getCount(var1,verbose);
+  	    neuron = obj.vars(1);
+            x = objData.getCount(neuron,verbose);
             
             xGroups{1,1} = x;
             
@@ -33,8 +36,9 @@ classdef calc_count_behav < mi_analysis
             y = objData.getPressure(pressureLength,verbose);
             yGroups{1,1} = y;
             
-            Coeffs = {1};
-            
+            coeffs = {1};
+
+            buildMIs@mi_analysis(obj, {xGroups yGroups coeffs},verbose);          
             
             
         end

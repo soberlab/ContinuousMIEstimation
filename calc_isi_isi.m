@@ -10,6 +10,8 @@ classdef calc_isi_isi < mi_analysis
     end
     
     methods
+
+
         function obj = calc_isi_isi(objData, vars, isi_offset, isi_cutoff, verbose)
             % var1 is a positive integer to indicate neuron number
             
@@ -52,7 +54,7 @@ classdef calc_isi_isi < mi_analysis
             
             % Find ISIs from spike times
             ISIs = diff(spikeTimes);
-            % BRYCE- can you verify that this is correct? 
+            % Check ISIs against cutoff. 
             ISIs = ISIs(find(ISIs < obj.isi_cutoff));
             
             offset = obj.isi_offset;

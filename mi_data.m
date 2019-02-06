@@ -16,7 +16,7 @@ classdef mi_data < handle
 
     methods
        function obj = mi_data(nFs,pFs)
-           % This function loads the spiking data raw pressure data and documents the sample frequencies
+           % This function documents the sample frequencies
            % Note that I need to add the proper functions once Bryce sends me his code  
            if nargin > 0
                obj.bFs = pFs;
@@ -39,7 +39,7 @@ classdef mi_data < handle
            obj.behavior = behavior;
        end
 
-       function r = getTiming(dataNum, verbose)
+       function r = getTiming(obj, dataNum, verbose)
            % Makes matrices of pressure data  need to decide what units to use and spiking data based on what we have      
            % NOTE- currently as the code is written, we omit any neural or pressure data that occurs	 
            % before the onset of the first cycle or after the onset of the last cycle
@@ -58,7 +58,7 @@ classdef mi_data < handle
            cycle_ts = obj.cycleTimes;
 
            % Find the number of spikes in each cycle
-           cycle_spike_counts = getCount(dataNum, verbose);
+           cycle_spike_counts = obj.getCount(dataNum, verbose);
 
            % Calculate relative spike times for each breathing cycle
            if verbose > 1; disp('-> Calculating relative spike times by cycle'); end
@@ -73,7 +73,7 @@ classdef mi_data < handle
        
        end
        
-       function r = getCount(dataNum, verbose)
+       function r = getCount(obj, dataNum, verbose)
            spike_ts = obj.neurons{dataNum};
            cycle_ts = obj.cycleTimes;
 
@@ -88,7 +88,7 @@ classdef mi_data < handle
            r = cycle_spike_counts;
        end
        
-       function r = getPressure(desiredLength, verbose)
+       function r = getPressure(obj, desiredLength, verbose)
            % desiredLength- the number of pressure dimensions you want to
            % include. 
 

@@ -8,32 +8,39 @@ classdef calc_count_count < mi_analysis
     end
     
     methods
-       function obj = calc_count_count(objData,var1,var2, verbose)
+
+       function obj = calc_count_count(objData,vars, verbose)
             % Construct an instance of this class
             %   Detailed explanation goes here
-            obj =  mi_analysis(objData, var1, var2);
-            [xGroups,yGroups, Coeffs] = setParams(obj,pressureLength, verbose);
-            obj.arrMIcore{1,2} = Coeffs;
-            obj.findMIs(xGroups,yGroups,Coeffs,verbose);
+            if nargin < 3; verbose = 1; end
+            if length(vars) ~= 2
+                error('Expected two variables specified');
+            end
+
+            obj@mi_analysis(objData, vars);
         end
         
-	      function [xGroups, yGroups, Coeffs] = setParams(obj, verbose)
-            % So I propose that we use this method to prep the
-            % count_behavior data for the MI core and go ahead and run MI
-            % core from here. Then we can use the output of MI core to fill
-            % in the MI, kvalue, and errors.
-            
-            % Find total spike count in a cycle
-            x = objData.getCount(var1,verbose);
+        function  buildMIs(obj, verbose)
+         % Build the data and core objects necessary to run the sim manager for this analysis class. 
+
+            % Find total spike count in a cycle for neuron 1 
+            neuron  = obj.vars(1);
+       	    x = obj.objData.getCount(neuron,verbose);
+
+            % Set groups that will serve as x variable
             xGroups{1,1} = x;
             
-            % Next segmentt neuron 2 data into cycles
-            y = objData.getCount(var2,verbose);
-            
+            % Next find spike count for neuron 2
+            neuron = obj.vars(2);
+            y = obj.objData.getCount(neuron,verbose);
+
+            % Set groups that will serve as y variable
             yGroups{1,1} = y;
-            
-            Coeffs = {1};
-            
+
+            % Set coefficients for groups
+            coeffs = {1};
+
+            buildMIs@mi_analysis(obj, {xGroups yGroups coeffs},verbose);
         end
     end
 end
