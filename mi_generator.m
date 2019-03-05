@@ -4,6 +4,9 @@ classdef mi_generator < handle
     % to synthesize data based on various ISI distributions
     
     properties
+        % Consider setting phase, duration, etc. as a reference to a
+        % function. We can specify which function is called (gaussianData,
+        % other distributions). All of them are by default gaussian. 
         phase % 3 x 1 vector indicating [distribution , mean, variance]
          % of the phase within each cycle the firing begins, dist (gaussian
          % defualt)
@@ -22,21 +25,34 @@ classdef mi_generator < handle
             if nargin == 0
                 % All default params - NOTE CURRENTLY ARBITRARY
                 obj.phase = {'N', 5*pi/4 , pi/16 };
+                % Use an anonymous function for more flexibility
+                % obj.phase = @(s) normrnd(mu, sigma, s);
+                % call: obj.phase([N nSamp]) 
+                % In this case, we will set a default mu and sigma. 
                 obj.duration = {'N', 200 , 3 };
                 obj.burstLength = pi/2;
                 obj.rate = 200;
                 obj.Fs = 32000;
+                % For the wavform. I need to think about whether the
+                % wavefore needs to be at the sampling frequency of the
+                % data. If we have an action potential waveform, we will
+                % need to resample based on the sample frequency and the
+                % waveform duration. Probably use the resample function to
+                % do this. We will either extract the waveform. 
                 obj.waveform = sin(0:2*pi/(obj.Fs/1000):2*pi); 
-                obj.refract = 4;
+                % Revisit the refractory period in the exponential
+                % distribution. 
+                obj.refract = 1;
                 obj.SNR = 4;
                 
             end
             
         end
         
-        function [simData] = makeVoltageData(obj, Ncycles)
+        function [simData] = makeVoltageData(obj, nCycles, lCutoff, lCutoff)
+            % Condition on nargin to determine whether to filter. 
             % Generate spike sequences within cycles fromd distributions. 
-            [spikes, durations] = obj.sampleCycles(Ncycles);
+            [spikes, durations] = obj.sampleCycles(nCycles);
             % Put Cycles into one spike train
             [spikeTimes] = obj.getTimes(spikes, durations);
             % Convert spike times into a noiseless voltage trace
@@ -45,10 +61,10 @@ classdef mi_generator < handle
             [simData] = addNoise(obj, data);
             
         end
-        function [spikes, durations] = sampleCycles(obj, Ncycles)
+        function [spikes, durations] = sampleCycles(obj, nCycles)
             spikes = {};
-            phases = normrnd( obj.phase{2} , obj.phase{3} , [1 , Ncycles] );
-            durations = normrnd( obj.duration{2} , obj.duration{3} , [1 , Ncycles] );
+            phases = normrnd( obj.phase{2} , obj.phase{3} , [1 , nCycles] );
+            durations = normrnd( obj.duration{2} , obj.duration{3} , [1 , nCycles] );
             % convert phase to start times in ms
             burstStart = phases.*(durations/(2*pi));
             % convert burstLength to ms
@@ -57,12 +73,21 @@ classdef mi_generator < handle
                 isis = [];
                 idx = 1;
                 postStartTime = [];
+                
+                % sample exprrnd MORE than needed: ts = exprnd(mu, [N+10])
+                % sumTs = cumsum(ts);
+                % ixs = sumTs < duration;
+                % cycleTs = sumTs(ixs);
+                
+                
                 while sum(isis) < burstDurations(iCycle)
                     isiSeconds = exprnd(1/obj.rate);
-                    isiMS = isiSeconds * 1000;
-                    % THIS IS NOT WORKING. NEED TO TROUBLESHOOT. 
+                    isiMS = isiSeconds * 1000; 
                     if isiMS > obj.refract
                         isis(idx) = isiMS;
+                        % Take out conditional. Create an array of isis
+                        % from the exponential then use cumsum() after the
+                        % while loop. 
                         if idx > 1
                             postStartTime(idx) = sum(isis);
                         else
@@ -100,6 +125,8 @@ classdef mi_generator < handle
                 idxs = spikeSamples + iSample - 4;
                 voltage(1,idxs) = spike;
             end
+            % EDIT TO TRY: Try a binary with a one at each spike index then convolve
+            % with the waveform. 
             data = voltage;
         end
         function [simData] = addNoise(obj, data)

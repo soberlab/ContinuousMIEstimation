@@ -91,7 +91,7 @@ buildMIs(MI_cc, MI_cc.verbose);
 calcMIs(MI_cc);
 
 
-%% TIMING_COUNT EXAMPLE
+%% TIMING_COUNT EXAMPLE- WORKING AS OF 03042019
 % RC:
 clear
 
@@ -125,10 +125,99 @@ buildMIs(MI_tc, MI_tc.verbose);
 calcMIs(MI_tc);
 
 
-%% COUNT-COUNT-BEHAVIOR EXAMPLE - WAITING ON RAW PRESSURE DATA FROM BRYCE
+%% COUNT-COUNT-BEHAVIOR EXAMPLE - WORKING AS OF 03042019
 
 % RC:
 clear
+load('bl21lb21_171218_dtvw-0002.mat')
+ts1 = spikedata.ts(:,1)*1000;
+
+load('bl21lb21_171218_dtvw-0003.mat')
+ts2 = spikedata.ts(:,1)*1000;
+
+load('bl21lb21_171218_dtvw-pressure.mat')
+ptimes = spikedata.ts(:,1)*1000;
+
+clearvars -except ts1 ts2 ptimes
+
+% Load Pressure data- for area under the curve
+load('bl21lb21_171218_dtvw-pressure.mat')
+pressure = spikedata.ts(1:end,5);
+% Load Pressure data - for raw pressure (smaller files)
+% fid = fopen('bl21lb21_171218_130932_180s_CH1-2-3-4-5-6-7-8_Fs30000_Filt300-7500.bin','r');
+% data = fread(fid,[9,540280],'double');
+% pressure = data(9,1:end);
+
+clearvars -except ts1 ts2 ptimes pressure
+
+
+
+% Instantiate data object
+neural_data = mi_data(30000,30000);
+add_spikes(neural_data, ts1);
+add_spikes(neural_data, ts2);
+add_behavior(neural_data, pressure)
+
+
+% Add pressure times
+neural_data.cycleTimes = ptimes;
+
+clearvars -except neural_data
+
+
+% Instantiate analysis object(s)
+MI_ccb = calc_count_count_behav(neural_data, [1 2]);
+
+buildMIs(MI_ccb, 5 , MI_ccb.verbose)
+
+calcMIs(MI_ccb);
+%% COUNT-BEHAVIOR EXAMPLE - WORKING AS OF 03052019
+
+% RC:
+clear
+load('bl21lb21_171218_dtvw-0002.mat')
+ts1 = spikedata.ts(:,1)*1000;
+
+
+load('bl21lb21_171218_dtvw-pressure.mat')
+ptimes = spikedata.ts(:,1)*1000;
+
+clearvars -except ts1 ts2 ptimes
+
+% Load Pressure data- for area under the curve
+load('bl21lb21_171218_dtvw-pressure.mat')
+pressure = spikedata.ts(1:end,5);
+% Load Pressure data - for raw pressure (smaller files)
+% fid = fopen('bl21lb21_171218_130932_180s_CH1-2-3-4-5-6-7-8_Fs30000_Filt300-7500.bin','r');
+% data = fread(fid,[9,540280],'double');
+% pressure = data(9,1:end);
+
+clearvars -except ts1 ptimes pressure
+
+
+
+% Instantiate data object
+neural_data = mi_data(30000,30000);
+add_spikes(neural_data, ts1);
+add_behavior(neural_data, pressure)
+
+
+% Add pressure times
+neural_data.cycleTimes = ptimes;
+
+clearvars -except neural_data
+
+
+% Instantiate analysis object(s)
+MI_cb = calc_count_behav(neural_data, 1);
+
+buildMIs(MI_cb, 5 , MI_cb.verbose)
+
+calcMIs(MI_cb);
+%% TIMING_TIMING EXAMPLE- WORKING AS OF 03052019
+% RC:
+clear
+
 load('bl21lb21_171218_dtvw-0002.mat')
 ts1 = spikedata.ts(:,1)*1000;
 
@@ -152,12 +241,134 @@ clearvars -except neural_data
 
 
 % Instantiate analysis object(s)
-MI_ccb = calc_count_count_behav(neural_data, [1 2]);
+MI_tt = calc_timing_timing(neural_data, [1 2]);
 
-buildMIs(MI_ccb, MI_ccb.verbose);
+buildMIs(MI_tt, MI_tt.verbose);
 
-calcMIs(MI_ccb);
-=======
+calcMIs(MI_tt);
+
+%% TIMING_TIMING_BEHAV EXAMPLE- WORKING AS OF 03052019
+% RC:
+clear
+
+load('bl21lb21_171218_dtvw-0002.mat')
+ts1 = spikedata.ts(:,1)*1000;
+
+load('bl21lb21_171218_dtvw-0003.mat')
+ts2 = spikedata.ts(:,1)*1000;
+
+load('bl21lb21_171218_dtvw-pressure.mat')
+ptimes = spikedata.ts(:,1)*1000;
+
+% Load Pressure data- for area under the curve
+load('bl21lb21_171218_dtvw-pressure.mat')
+pressure = spikedata.ts(1:end,5);
+% Load Pressure data - for raw pressure (smaller files)
+% fid = fopen('bl21lb21_171218_130932_180s_CH1-2-3-4-5-6-7-8_Fs30000_Filt300-7500.bin','r');
+% data = fread(fid,[9,540280],'double');
+% pressure = data(9,1:end);
+
+clearvars -except ts1 ts2 pressure ptimes
+
+% Instantiate data object
+neural_data = mi_data(30000,30000);
+add_spikes(neural_data, ts1);
+add_spikes(neural_data, ts2);
+add_behavior(neural_data, pressure)
+
+% Add pressure times
+neural_data.cycleTimes = ptimes;
+
+clearvars -except neural_data
+
+
+% Instantiate analysis object(s)
+MI_ttb = calc_timing_timing_behav(neural_data, [1 2]);
+
+buildMIs(MI_ttb,5, MI_ttb.verbose);
+
+calcMIs(MI_ttb);
+
+%% TIMING_COUNT_BEHAV EXAMPLE-WORKING AS OF 03052019
+% RC:
+clear
+
+load('bl21lb21_171218_dtvw-0002.mat')
+ts1 = spikedata.ts(:,1)*1000;
+
+load('bl21lb21_171218_dtvw-0003.mat')
+ts2 = spikedata.ts(:,1)*1000;
+
+load('bl21lb21_171218_dtvw-pressure.mat')
+ptimes = spikedata.ts(:,1)*1000;
+
+% Load Pressure data- for area under the curve
+load('bl21lb21_171218_dtvw-pressure.mat')
+pressure = spikedata.ts(1:end,5);
+% Load Pressure data - for raw pressure (smaller files)
+% fid = fopen('bl21lb21_171218_130932_180s_CH1-2-3-4-5-6-7-8_Fs30000_Filt300-7500.bin','r');
+% data = fread(fid,[9,540280],'double');
+% pressure = data(9,1:end);
+
+clearvars -except ts1 ts2 pressure ptimes
+
+% Instantiate data object
+neural_data = mi_data(30000,30000);
+add_spikes(neural_data, ts1);
+add_spikes(neural_data, ts2);
+add_behavior(neural_data, pressure)
+
+% Add pressure times
+neural_data.cycleTimes = ptimes;
+
+clearvars -except neural_data
+
+
+% Instantiate analysis object(s)
+MI_tcb = calc_timing_count_behav(neural_data, [1 2]);
+
+buildMIs(MI_tcb,5, MI_tcb.verbose);
+
+calcMIs(MI_tcb);
+
+%% TIMING_BEHAV EXAMPLE- WORKING AS OF 03052019
+% RC:
+clear
+
+load('bl21lb21_171218_dtvw-0002.mat')
+ts1 = spikedata.ts(:,1)*1000;
+
+
+% Load Pressure data- for area under the curve
+load('bl21lb21_171218_dtvw-pressure.mat')
+ptimes = spikedata.ts(:,1)*1000;
+pressure = spikedata.ts(1:end,5);
+% Load Pressure data - for raw pressure (smaller files)
+% fid = fopen('bl21lb21_171218_130932_180s_CH1-2-3-4-5-6-7-8_Fs30000_Filt300-7500.bin','r');
+% data = fread(fid,[9,540280],'double');
+% pressure = data(9,1:end);
+
+clearvars -except ts1 pressure ptimes
+
+% Instantiate data object
+neural_data = mi_data(30000,30000);
+add_spikes(neural_data, ts1);
+add_behavior(neural_data, pressure);
+
+% Add pressure times
+neural_data.cycleTimes = ptimes;
+
+clearvars -except neural_data
+
+
+% Instantiate analysis object(s)
+MI_tb = calc_timing_behav(neural_data, [1 2]);
+
+buildMIs(MI_tb,5, MI_tb.verbose);
+
+calcMIs(MI_tb);
+%%
+
 if size(core1.mi_data,1) > length(core1.k_values)
     a = core1.k_values;
     b = 1:10;
