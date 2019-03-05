@@ -78,7 +78,9 @@ classdef mi_data < handle
            cycle_ts = obj.cycleTimes;
 
            % Find the number of spikes in each cycle
-           cycle_spike_counts = zeros(1,size(cycle_ts,1));
+           % We include data that comes after the onset of the first cycle
+           % and before the onset of the last cycle
+           cycle_spike_counts = zeros(1,size(cycle_ts,1)-1);
            for cycle_ix = 1:(size(cycle_ts,1)-1)
                cycle_spikes_ix = find((spike_ts > cycle_ts(cycle_ix)) & (spike_ts < cycle_ts(cycle_ix+1)));
                if ~isempty(cycle_spikes_ix)
@@ -106,7 +108,7 @@ classdef mi_data < handle
             
            cycle_times = obj.cycleTimes;
            cycle_seconds = cycle_times./1000;
-           cycle_samples = cycle_seconds .* obj.pFs;
+           cycle_samples = ceil(cycle_seconds .* obj.bFs);
            cycle_lengths = diff(cycle_samples);
            
            p = obj.behavior;
@@ -114,10 +116,10 @@ classdef mi_data < handle
            nCycles = length(cycle_lengths);
            cycle_pressure_wave = nan(nCycles, desiredLength);
            
-           for cycle_ix = 1:size(cycle_samples,1)-1
-               cycle_pressure = p(cycle_samples(cycle_ix):cycle_samples(cycle_ix+1));
+           for cycle_ix = 1:10%cycle_ix = 1:size(cycle_samples,1)-1
+               cycle_pressure = p(cycle_samples(cycle_ix):cycle_samples(cycle_ix+1)-1);
                resampled_cycle_pressure = resample(cycle_pressure,desiredLength,cycle_lengths(cycle_ix));
-               cycle_pressure_wave(cycle_ix, 1:desiredLength) = resampled_cycle_pressure;
+               cycle_pressure_wave(cycle_ix, 1:desiredLength) = resampled_cycle_pressure;   
            end
            r = cycle_pressure_wave;
        end

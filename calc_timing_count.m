@@ -10,18 +10,21 @@ classdef calc_timing_count < mi_analysis
     methods
         function obj = calc_timing_count(objData,vars, verbose)
             % vars - 2 x 1 vector specifying neuron numbers
-            if nargin < 3; verbose = 1; end
+
             if length(vars) ~= 2
                 error('Expected two variables specified');
             end
 
             obj@mi_analysis(objData, vars);
+            if nargin < 3 
+                obj.verbose = 1; 
+            end
         end
         
         function buildMIs(obj, verbose)
 % Build the data and core objects necessary to run the sim manager for this analysis class            
             % First, segment neural data into breath cycles
- 	    neuron = obj.vars(1);
+            neuron = obj.vars(1);
             x = obj.objData.getTiming(neuron,verbose);
            
             % Find different subgroups
@@ -36,13 +39,13 @@ classdef calc_timing_count < mi_analysis
             % AS WRITTEN- we put each subgroup for the calculation into an array. 
             % NOTE currently as this code is written, we dont worry about data limitations. 
             xGroups = {};
-            Coeffs = {};
+            coeffs = {};
             yGroups = {};
 
-                % Segment x and y data into roups based on x spike count
-                % Set Group counter
-                iGroup = 1;
-                noteCount = 1;
+            % Segment x and y data into roups based on x spike count
+            % Set Group counter
+            groupCount = 1;
+            noteCount = 1;
             for iCond = 1:length(xConds)
                 Cond = xConds(iCond);
                 groupIdx = find(xCounts == Cond);
@@ -70,13 +73,13 @@ classdef calc_timing_count < mi_analysis
                     continue
                 end
                 ixGroup =  x(groupIdx,1:Cond);
-                xGroups{iGroup,1} = ixGroup;
-                Coeffs{iGroup,1} = length(ixGroup)/length(xCounts);
-                yGroups{iGroup,1} = y(groupIdx)';
-                iGroup = iGroup + 1;
+                xGroups{groupCount,1} = ixGroup;
+                coeffs{groupCount,1} = length(ixGroup)/length(xCounts);
+                yGroups{groupCount,1} = y(groupIdx)';
+                groupCount = groupCount + 1;
             end
 	    
-            buildMIs@mi_analysis(obj, {xGroups yGroups Coeffs},verbose);          
+            buildMIs@mi_analysis(obj, {xGroups yGroups coeffs},verbose);          
             
         end
     end

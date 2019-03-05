@@ -9,18 +9,21 @@ classdef calc_count_behav < mi_analysis
     
     methods
        function obj = calc_count_behav(objData,vars, verbose)
-           if nargin < 3; obj.verbose = 1; end
+
            if length(vars) ~= 1
-	       error('Expected one variable specified')
-	   end
+               error('Expected one variable specified')
+           end
 
            obj@mi_analysis(objData, vars);
+           if nargin < 3 
+               obj.verbose = 1; 
+           end
 
         end
         
-        function buildMIs(obj, pressureLength, verbose)
+        function buildMIs(obj, desiredLength, verbose)
             if nargin < 2
-                pressureLength = 200;
+                desiredLength = 200;
                 verbose = obj.verbose;
             elseif nargin < 3
                 verbose = obj.verbose;
@@ -28,12 +31,16 @@ classdef calc_count_behav < mi_analysis
 
             % First, segment neural data into breath cycles
   	    neuron = obj.vars(1);
-            x = objData.getCount(neuron,verbose);
+            x = obj.objData.getCount(neuron,verbose);
             
             xGroups{1,1} = x;
             
-            % Next segment pressure data into cycles
-            y = objData.getPressure(pressureLength,verbose);
+            % Segment behavioral data into cycles
+            % RC- we should change this to choose what we want to do with
+            % the pressure. How do we do this? 
+            %y = obj.objData.getPressure(desiredLength, verbose);
+            % For now, we are using area under the curve for pressure
+            y = obj.objData.behavior;
             yGroups{1,1} = y;
             
             coeffs = {1};
