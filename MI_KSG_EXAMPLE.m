@@ -2,8 +2,8 @@
 close('all');
 
 % Load spike times
-load('bl21lb21_171218_spikedata-0002-CH5.mat');
-ts = spikedata.ts(:,1)*1000;
+% load('bl21lb21_171218_nmsort.mat');
+ts = dtvw_spikedata.Unit1.peak_times*1000; % ms
 
 % Load pressure data
 
