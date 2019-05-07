@@ -4,7 +4,7 @@ classdef mi_analysis < handle
     properties
         verbose
         
-        vars % list integer (-1 OR 1-Nneurons)
+        vars % 2 x Nvariables list integer {(-1 OR 1-Nneurons), 'phase' or 'time';...}
              % which indicates whether to take in the pressure or which neuron
         
         % BC: This should only ever reference ONE objData
@@ -30,7 +30,7 @@ classdef mi_analysis < handle
                 obj.vars = vars;   						
             else
                 obj.objData = objData;
-                obj.vars = [];
+                obj.vars = {};
             end	   
 	   
             obj.arrMIcore = {};

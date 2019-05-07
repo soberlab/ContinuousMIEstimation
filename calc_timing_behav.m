@@ -22,12 +22,27 @@ classdef calc_timing_behav < mi_analysis
 
         end
         
-        function buildMIs(obj, desiredLength, verbose)
+        function buildMIs(obj, behaviorSpec, desiredLength,startPhase, residual, windowOfInterest)
             % So I propose that we use this method to prep the
             % count_behavior data for the MI core and go ahead and run MI
             % core from here. Then we can use the output of MI core to fill
             % in the MI, kvalue, and errors.
-            
+           % Specify default parameters
+           if nargin < 2
+               behaviorSpec = 'phase';
+               desiredLength = 11;
+               startPhase = .8*pi;
+               residual = true; 
+           elseif nargin < 3
+               desiredLength = 11;
+               startPhase = .8*pi;
+               residual = true;
+           elseif nargin < 4
+               startPhase = .8*pi;
+               residual = true; 
+           elseif nargin < 5
+               residual = true;
+           end
             % First, segment neural data into breath cycles
             neuron = obj.vars(1);
             x = obj.objData.getTiming(neuron,verbose);
@@ -39,9 +54,8 @@ classdef calc_timing_behav < mi_analysis
             % Segment behavioral data into cycles
             % RC- we should change this to choose what we want to do with
             % the pressure. How do we do this? 
-            %y = obj.objData.getPressure(desiredLength, verbose);
-            % For now, we are using area under the curve for pressure
-            y = obj.objData.behavior;
+            y = obj.objData.behaviorByCycles();
+
 
             % Figure out how each subgroup is going to feed into the 
             % MI_sim_manager

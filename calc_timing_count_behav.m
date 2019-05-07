@@ -25,31 +25,44 @@ classdef calc_timing_count_behav < mi_analysis
             end
         end
         
-        function buildMIs(obj, desiredLength,verbose)
+        function buildMIs(obj, behaviorSpec, desiredLength,startPhase, residual, windowOfInterest)
             % So I propose that we use this method to prep the
             % count_behavior data for the MI core and go ahead and run MI
             % core from here. Then we can use the output of MI core to fill
             % in the MI, kvalue, and errors.
-            
+           % Specify default parameters
+           if nargin < 2
+               behaviorSpec = 'phase';
+               desiredLength = 11;
+               startPhase = .8*pi;
+               residual = true; 
+           elseif nargin < 3
+               desiredLength = 11;
+               startPhase = .8*pi;
+               residual = true;
+           elseif nargin < 4
+               startPhase = .8*pi;
+               residual = true; 
+           elseif nargin < 5
+               residual = true;
+           end
             
             % First, segment neural data into breath cycles
             neuron = obj.vars(1);
-            n1 = obj.objData.getTiming(neuron,verbose);
+            n1 = obj.objData.getTiming(neuron);
            
             % Find different subgroups
-            n1Counts = obj.objData.getCount(neuron,verbose);
+            n1Counts = obj.objData.getCount(neuron);
             n1Conds = unique(n1Counts);
 
             % Find count values for neuron 2
             neuron = obj.vars(2);
-            n2Counts = obj.objData.getCount(neuron,verbose);
+            n2Counts = obj.objData.getCount(neuron);
             
             % Segment behavioral data into cycles
-            % RC- we should change this to choose what we want to do with
-            % the pressure. How do we do this? 
-            %y = obj.objData.getPressure(desiredLength, verbose);
-            % For now, we are using area under the curve for pressure
-            y = obj.objData.behavior;
+            % The following function has MANY optional arguments. It is
+            % unclear at what level to specify these arguments
+            y = obj.objData.behaviorByCycles();
             
             %Both neurons collectively will make up the x group. We will
             %concatonate each condition. 
@@ -93,7 +106,7 @@ classdef calc_timing_count_behav < mi_analysis
                 coeffs{iGroup,1} = length(n1groupIdx)/length(n1Counts);
                 iGroup = iGroup + 1;
             end
-                buildMIs@mi_analysis(obj, {xGroups yGroups coeffs},verbose);     
+                buildMIs@mi_analysis(obj, {xGroups yGroups coeffs});     
             end
 
             % From here, each entry in xGroups and yGroups will feed into

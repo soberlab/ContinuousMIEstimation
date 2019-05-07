@@ -367,6 +367,29 @@ MI_tb = calc_timing_behav(neural_data, [1 2]);
 buildMIs(MI_tb,5, MI_tb.verbose);
 
 calcMIs(MI_tb);
+
+%% Pressure Phase Code 
+clear
+% Load Data
+load('bl21lb21_171218_125431_300s_CH1-2-3-4-5-6-7-8_Fs30000_Filt300-7500-analog (1).mat')
+
+% Instantiate data object
+obj = mi_data(32000,32000);
+
+% Add pressure data to object
+obj.add_behavior( wav_tmp(9,:));
+
+% Clear variables
+clearvars -except obj
+
+% Get Cycle times for object
+obj.get_cycleTimes();
+
+% Get pressure cycles - phase
+% pressure_cycles = obj.getPressure();
+
+% Get pressure cycles - time
+pressure_cycles = obj.getPressure('time');
 %%
 
 if size(core1.mi_data,1) > length(core1.k_values)
