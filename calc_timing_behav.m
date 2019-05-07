@@ -54,7 +54,11 @@ classdef calc_timing_behav < mi_analysis
             % Segment behavioral data into cycles
             % RC- we should change this to choose what we want to do with
             % the pressure. How do we do this? 
-            y = obj.objData.behaviorByCycles();
+            if nargin < 6
+                y = obj.objData.behaviorByCycles(behaviorSpec, desiredLength, startPhase, residual);
+            elseif nargin == 6
+                y = obj.objDatabehaviorByCycles(behaviorSpec, desiredLength, startPhase, residual, windowOfInterest);
+            end
 
 
             % Figure out how each subgroup is going to feed into the 
