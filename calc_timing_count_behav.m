@@ -62,7 +62,11 @@ classdef calc_timing_count_behav < mi_analysis
             % Segment behavioral data into cycles
             % The following function has MANY optional arguments. It is
             % unclear at what level to specify these arguments
-            y = obj.objData.behaviorByCycles();
+            if nargin < 6
+                y = obj.objData.behaviorByCycles(behaviorSpec, desiredLength, startPhase, residual);
+            elseif nargin == 6
+                y = obj.objDatabehaviorByCycles(behaviorSpec, desiredLength, startPhase, residual, windowOfInterest);
+            end
             
             %Both neurons collectively will make up the x group. We will
             %concatonate each condition. 
