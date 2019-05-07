@@ -23,35 +23,53 @@ classdef calc_timing_timing_behav < mi_analysis
             end
         end
         
-        function buildMIs(obj,desiredLength, verbose)
+        function buildMIs(obj, behaviorSpec, desiredLength, startPhase, residual, windowOfInterest)
             % So I propose that we use this method to prep the
             % count_behavior data for the MI core and go ahead and run MI
             % core from here. Then we can use the output of MI core to fill
             % in the MI, kvalue, and errors.
             
+           % Specify default parameters
+           if nargin < 2
+               behaviorSpec = 'phase';
+               desiredLength = 11;
+               startPhase = .8*pi;
+               residual = true; 
+           elseif nargin < 3
+               desiredLength = 11;
+               startPhase = .8*pi;
+               residual = true;
+           elseif nargin < 4
+               startPhase = .8*pi;
+               residual = true; 
+           elseif nargin < 5
+               residual = true;
+           end
+
             % First, segment neural data into breath cycles
             neuron = obj.vars(1);
-            n1 = obj.objData.getTiming(neuron,verbose);
+            n1 = obj.objData.getTiming(neuron);
            
             % Find different subgroups for neuron 1
-            n1Counts = obj.objData.getCount(neuron,verbose);
+            n1Counts = obj.objData.getCount(neuron);
             n1Conds = unique(n1Counts);
 
             % Segment neuron 2 into breath cycles
             % Segment neuron 2 into breath cycles
             neuron = obj.vars(2);
-            n2 = obj.objData.getTiming(neuron,verbose);
+            n2 = obj.objData.getTiming(neuron);
 
             % Find different subgroups for neuron 2
-            n2Counts = obj.objData.getCount(neuron,verbose);
+            n2Counts = obj.objData.getCount(neuron);
             n2Conds = unique(n2Counts);
             
             % Segment behavioral data into cycles
-            % RC- we should change this to choose what we want to do with
-            % the pressure. How do we do this? 
-            % y = obj.objData.getPressure(desiredLength, verbose);
-            % For now, we are using area under the curve for pressure
-            y = obj.objData.behavior;
+
+            if nargin < 6
+                y = obj.objData.behaviorByCycles(behaviorSpec, desiredLength, startPhase, residual);
+            elseif nargin == 6
+                y = obj.objDatabehaviorByCycles(behaviorSpec, desiredLength, startPhase, residual, windowOfInterest);
+            end
             
             %Both neurons collectively will make up the x group. We will
             %concatonate each condition. 
@@ -124,7 +142,7 @@ classdef calc_timing_timing_behav < mi_analysis
                 end
                 
             end
-            buildMIs@mi_analysis(obj, {xGroups yGroups coeffs},verbose); 
+            buildMIs@mi_analysis(obj, {xGroups yGroups coeffs}); 
             
         end
     end
