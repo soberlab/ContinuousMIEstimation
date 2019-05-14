@@ -124,38 +124,42 @@ classdef mi_ksg_core < handle
                 k_ix = find([obj.mi_data{:,4}] == ks(i) & [obj.mi_data{:,3}] == 1);
                 k_mi(i) = obj.mi_data{k_ix,1};
             end
-            for i=1:length(ks)
-                if i == 1
-                    weighted_dataFrac(i,1) = (k_mi(i+1)-k_mi(i))/k_mi(i);
-                elseif i == length(ks)
-                    weighted_dataFrac(i,1) = (k_mi(i) - k_mi(i-1))/k_mi(i);
-                else
-                    weighted_dataFrac(i,1) = mean((k_mi([i-1 i+1])-k_mi(i))/k_mi(i));
+            if length(ks) > 1
+                for i=1:length(ks)
+                    if i == 1
+                        weighted_dataFrac(i,1) = (k_mi(i+1)-k_mi(i))/k_mi(i);
+                    elseif i == length(ks)
+                        weighted_dataFrac(i,1) = (k_mi(i) - k_mi(i-1))/k_mi(i);
+                    else
+                        weighted_dataFrac(i,1) = mean((k_mi([i-1 i+1])-k_mi(i))/k_mi(i));
+                    end
                 end
+
+                % find k-value with stable data fractions
+
+                % first column
+                % second column: percent difference from data frac = 1
+                % third column: std of percent difference from data frac = 1
+                % fourth column: std of data frac std
+
+                for i=1:length(ks)
+                    k_ixs = find(k_vals == ks(i));
+                    mi_vals = [obj.mi_data{k_ixs,1}];
+                    perc_mi_vals = (mi_vals - mi_vals(1))/mi_vals(1); % percent difference from 1 data fraction
+
+                    weighted_dataFrac(i,2) = sign(mean(perc_mi_vals(2:end)))*mean(perc_mi_vals(2:end).^2)^0.5;
+                    weighted_dataFrac(i,3) = std(perc_mi_vals(2:end));
+
+                    weighted_dataFrac(i,4) = std([obj.mi_data{k_ixs,2}]);
+                end
+
+                % provide some quantification of confidence?
+
+                [~,ix] = min(sum(weighted_dataFrac.^2,2));
+                obj.opt_k = ks(ix);
+            else
+                obj.opt_k = obj.k_values;
             end
-            
-            % find k-value with stable data fractions
-            
-            % first column
-            % second column: percent difference from data frac = 1
-            % third column: std of percent difference from data frac = 1
-            % fourth column: std of data frac std
-            
-            for i=1:length(ks)
-                k_ixs = find(k_vals == ks(i));
-                mi_vals = [obj.mi_data{k_ixs,1}];
-                perc_mi_vals = (mi_vals - mi_vals(1))/mi_vals(1); % percent difference from 1 data fraction
-                
-                weighted_dataFrac(i,2) = sign(mean(perc_mi_vals(2:end)))*mean(perc_mi_vals(2:end).^2)^0.5;
-                weighted_dataFrac(i,3) = std(perc_mi_vals(2:end));
-                
-                weighted_dataFrac(i,4) = std([obj.mi_data{k_ixs,2}]);
-            end
-            
-            % provide some quantification of confidence?
-            
-            [~,ix] = min(sum(weighted_dataFrac.^2,2));
-            obj.opt_k = ks(ix);
         end
         
         function r = fractionate_data(obj, k)

@@ -101,7 +101,9 @@ classdef calc_timing_behav < mi_analysis
                 ixGroup =  x(groupIdx,1:Cond);
                 xGroups{groupCount,1} = ixGroup;
                 coeffs{groupCount,1} = length(ixGroup)/length(xCounts);
-                yGroups{groupCount,1} = y(groupIdx,1:end);
+                % BC: 20190408 - removed 1:end
+                %yGroups{groupCount,1} = y(groupIdx,1:end);
+                yGroups{groupCount,1} = y(groupIdx);
                 groupCount = groupCount + 1;
             end
             buildMIs@mi_analysis(obj, {xGroups yGroups coeffs},verbose); 
