@@ -162,5 +162,61 @@ classdef spikes_library < handle
             text(xd+0.2, yd-0.01, nl, 'FontSize', 12, 'HorizontalAlignment', 'left', 'VerticalAlignment', 'middle', 'Rotation', -45);
         end
         
+        function show_words(obj)
+            spike_ts = obj.words;
+            keys = fieldnames(spike_ts);
+            
+            t_max = 0;
+            max_len = 1;
+            for i=1:length(keys)
+                t_max = max(max(t_max, spike_ts.(keys{i})));
+                max_len = max(max_len, length(spike_ts.(keys{i})));
+            end
+            
+            t_max = t_max*1.25;
+
+            samp_ts = nan(length(keys), max_len);            
+            for i=1:length(keys)
+                train = spike_ts.(keys{i});
+                samp_ts(i,1:length(train)) = train;
+            end
+            
+            fig = figure;
+            axRaster = subplot(3,3,(1:6));
+            axHist = subplot(3,3,(7:9));
+            
+            grid(axRaster, 'on');
+            hold(axRaster, 'on');
+            grid(axHist, 'on');
+            hold(axHist, 'on');
+            linkaxes([axRaster axHist], 'x');
+
+            [n, m] = size(samp_ts);
+
+            xs = repmat(reshape(samp_ts, 1,n*m), 2,1);
+            ys = repmat(reshape(repmat((1:n)',1,m), 1,n*m), 2,1);
+            ys(2,:) = ys(2,:) + 1;
+
+            h_raster = plot(axRaster, xs, ys, 'k-');
+            hold(axRaster, 'on');
+            
+            set(axRaster, 'YTick', 1:length(keys));
+            set(axRaster, 'YTickLabels', keys);
+            ylabel(axRaster, 'Word Name');
+
+            ylim(axRaster, [0 n+1]);
+            xlim(axRaster, [-5 t_max]);
+
+            plot(axRaster, [0 0], axRaster.YLim, 'r--', 'LineWidth', 0.25);
+            uistack(h_raster, 'top');
+            
+            h_hist = histogram(axHist, samp_ts);
+            h_hist.BinEdges = (0:2:t_max);
+            xlabel(axHist, 'Time (ms)');
+            ylabel(axHist, 'Iteration');
+
+            xlim(axHist, [-5 t_max]);
+        end
+        
     end    
 end
