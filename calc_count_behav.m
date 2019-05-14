@@ -40,7 +40,7 @@ classdef calc_count_behav < mi_analysis
             % the pressure. How do we do this? 
             %y = obj.objData.getPressure(desiredLength, verbose);
             % For now, we are using area under the curve for pressure
-            y = obj.objData.behavior;
+            y = obj.objData.behavior(1:end-1); % BC: based on count calc
             yGroups{1,1} = y;
             
             coeffs = {1};

@@ -35,7 +35,7 @@ classdef mi_analysis < handle
 	   
             obj.arrMIcore = {};
             % FOR RC 20190129:
-            obj.sim_manager = mi_ksg_sims(0,1);
+            obj.sim_manager = mi_ksg_sims(0,3);
             %obj.sim_manager = mi_ksg_sims();
         end
 
