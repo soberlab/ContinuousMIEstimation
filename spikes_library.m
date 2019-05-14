@@ -153,7 +153,7 @@ classdef spikes_library < handle
         
         function G = show_graph(obj)
             G = digraph(obj.adj_mat, get_words(obj), 'omitselfloops');
-            h_graph = plot(G);
+            h_graph = plot(G, 'EdgeLabel', G.Edges.Weight);
 
             nl = h_graph.NodeLabel;
             h_graph.NodeLabel = '';
