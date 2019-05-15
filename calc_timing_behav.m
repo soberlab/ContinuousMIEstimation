@@ -22,12 +22,27 @@ classdef calc_timing_behav < mi_analysis
 
         end
         
-        function buildMIs(obj, desiredLength, verbose)
+        function buildMIs(obj, behaviorSpec, desiredLength,startPhase, residual, windowOfInterest)
             % So I propose that we use this method to prep the
             % count_behavior data for the MI core and go ahead and run MI
             % core from here. Then we can use the output of MI core to fill
             % in the MI, kvalue, and errors.
-            
+           % Specify default parameters
+           if nargin < 2
+               behaviorSpec = 'phase';
+               desiredLength = 11;
+               startPhase = .8*pi;
+               residual = true; 
+           elseif nargin < 3
+               desiredLength = 11;
+               startPhase = .8*pi;
+               residual = true;
+           elseif nargin < 4
+               startPhase = .8*pi;
+               residual = true; 
+           elseif nargin < 5
+               residual = true;
+           end
             % First, segment neural data into breath cycles
             neuron = obj.vars(1);
             x = obj.objData.getTiming(neuron,verbose);
@@ -39,9 +54,12 @@ classdef calc_timing_behav < mi_analysis
             % Segment behavioral data into cycles
             % RC- we should change this to choose what we want to do with
             % the pressure. How do we do this? 
-            %y = obj.objData.getPressure(desiredLength, verbose);
-            % For now, we are using area under the curve for pressure
-            y = obj.objData.behavior;
+            if nargin < 6
+                y = obj.objData.behaviorByCycles(behaviorSpec, desiredLength, startPhase, residual);
+            elseif nargin == 6
+                y = obj.objDatabehaviorByCycles(behaviorSpec, desiredLength, startPhase, residual, windowOfInterest);
+            end
+
 
             % Figure out how each subgroup is going to feed into the 
             % MI_sim_manager
@@ -83,7 +101,9 @@ classdef calc_timing_behav < mi_analysis
                 ixGroup =  x(groupIdx,1:Cond);
                 xGroups{groupCount,1} = ixGroup;
                 coeffs{groupCount,1} = length(ixGroup)/length(xCounts);
-                yGroups{groupCount,1} = y(groupIdx,1:end);
+                % BC: 20190408 - removed 1:end
+                %yGroups{groupCount,1} = y(groupIdx,1:end);
+                yGroups{groupCount,1} = y(groupIdx);
                 groupCount = groupCount + 1;
             end
             buildMIs@mi_analysis(obj, {xGroups yGroups coeffs},verbose); 

@@ -7,7 +7,8 @@ classdef mi_data < handle
                 % 1 x N array of spike timing vectors- spike times in MS. 
                 % where N is the number of neurons recorded during this session. 
         behavior % 1 x N vector of the continuous pressure where N is the total samples
-        cycleTimes % 1 x N vector of onset times in MS of each breath cycle
+        cycleTimes % {1 x 2} array with 1: 1 x N vector of onset times in MS of each breath cycle
+                    % and 2: 1 x N vector of the peaks corresponding to the breathcycles
                     % where N is the total number of breath cycles
         Nbreaths % integer which indicates length of breathTimes
         bFs % sample frequency of pressure wave
@@ -38,8 +39,80 @@ classdef mi_data < handle
            % BC-20190123: Added function
            obj.behavior = behavior;
        end
+       
+       function get_cycleTimes(obj,cycleFreq, cutoffFreq)
+           % This function takes in raw behavioral data, applies a low pass filter
+           % and identifies the onset of cycle times based on the
+           % negative peaks. 
+           % NOTE- this function does not deal with cycles that need to be
+           % omitted. 
+           % Set sample Frequency
+           Fs = obj.bFs;
+           if nargin < 2
+               % Set default Cycle Frequency (Hz)
+               cycleFreq = 2;
+           end
+           if nargin < 3
+               % Set cutoff frequency (Hz)
+               cutoffFreq = 10;
+           end
+           
+           % Convert cycle frequency to Samples
+           cycleLengthSeconds = 1/cycleFreq;
+           cycleLengthSamples = cycleLengthSeconds*Fs;           
 
-       function r = getTiming(obj, dataNum, verbose)
+           % Convert cutoff freq to width of gaussian in samples
+           cutoffSeconds = 1/cutoffFreq;
+           cutoffSamples = cutoffSeconds*Fs;
+
+           % Find alpha value for input into gausswin Function
+           alpha = (cycleLengthSamples - 1)/(2*cutoffSamples);
+           
+           % Generate Gaussian Window
+           g = gausswin(cycleLengthSamples,alpha);
+
+           % Convolve the gaussian window with the behavior data
+           behavhiorSmoothed = conv(obj.behavior,g,'same');
+
+           % Find the negative peaks of the pressure cycles to determine the onset
+           % times
+
+           % We use the negative pressure vector to find negative peaks
+           behaviorForPeaks = -1*behavhiorSmoothed;
+           [pks, locs] = findpeaks(behaviorForPeaks,Fs, 'MinPeakDistance', cycleLengthSeconds/1.3);
+           
+           obj.cycleTimes = {locs,pks};
+       end
+       
+       function [processedData] = processBehavior(obj, cycleFreq, filterFreq)
+           % This function prepares the raw behavioral data for analysis
+           % Both arguments are optional and have default values
+           if nargin < 2
+               cycleFreq = 2;
+               filterFreq = 100;             
+           elseif nargin < 3
+               filterFreq = 100;
+           end
+
+           
+           % Convert cycle freq to length of gaussian in samples
+           cycleLengthSeconds = 1/cycleFreq;
+           cycleLengthSamples = cycleLengthSeconds * obj.bFs;
+           % Convert filter freq to width of gaussian in samples
+           filterWinSeconds = 1/filterFreq;
+           filterWinSamples = filterWinSeconds * obj.bFs;
+           
+           % Find alpha value for input to gaussian window function.
+           alpha = (cycleLengthSamples - 1)/(2*filterWinSamples);
+           
+           % Generate the gaussian window for filter
+           g = gausswin(cycleLengthSamples, alpha);
+           
+           processedData = conv(obj.behavior,g,'same');
+
+       end
+
+       function r = getTiming(obj, dataNum)
            % Makes matrices of pressure data  need to decide what units to use and spiking data based on what we have      
            % NOTE- currently as the code is written, we omit any neural or pressure data that occurs	 
            % before the onset of the first cycle or after the onset of the last cycle
@@ -52,16 +125,16 @@ classdef mi_data < handle
              % Return an m x n matrix of data with m cycles and n sample points (if pressure) 
              % or n maximum spikes (if neuron data) 
            %
-           if verbose > 1; disp([newline 'Running: dataByCycles' newline]); end
+           % if verbose > 1; disp([newline 'Running: dataByCycles' newline]); end
 
            spike_ts = obj.neurons{dataNum};
-           cycle_ts = obj.cycleTimes;
+           cycle_ts = obj.cycleTimes{1,1};
 
            % Find the number of spikes in each cycle
-           cycle_spike_counts = obj.getCount(dataNum, verbose);
+           cycle_spike_counts = obj.getCount(dataNum);
 
            % Calculate relative spike times for each breathing cycle
-           if verbose > 1; disp('-> Calculating relative spike times by cycle'); end
+           % if verbose > 1; disp('-> Calculating relative spike times by cycle'); end
            cycle_spike_ts = nan(size(cycle_ts,1)-1, max(cycle_spike_counts));
            for cycle_ix = 1:(size(cycle_ts,1)-1)
                cycle_spikes_ix = find((spike_ts > cycle_ts(cycle_ix)) & (spike_ts < cycle_ts(cycle_ix+1)));
@@ -73,9 +146,9 @@ classdef mi_data < handle
        
        end
        
-       function r = getCount(obj, dataNum, verbose)
+       function r = getCount(obj, dataNum)
            spike_ts = obj.neurons{dataNum};
-           cycle_ts = obj.cycleTimes;
+           cycle_ts = obj.cycleTimes{1,1};
 
            % Find the number of spikes in each cycle
            % We include data that comes after the onset of the first cycle
@@ -90,39 +163,121 @@ classdef mi_data < handle
            r = cycle_spike_counts;
        end
        
-       function r = getPressure(obj, desiredLength, verbose)
+       
+       function r = behaviorByCycles(obj, behaviorSpec, desiredLength, startPhase, residual, windowOfInterest)
+           % behaviorSpec - 'phase' or 'time' - indicating whether you want
+           % to include pressure as a phase or time variable
            % desiredLength- the number of pressure dimensions you want to
            % include. 
-
-           %NOTE We may want to run PCA or something else on the pressure
-           %waves.
-           % Currently this code resamples pressure data so that pressure
-           % data all the same length- meaning that we look at pressure
-           % values at consistent phases within the cycle. The user can
-           % specify the length. In Kyle's analysis, they take this a step
-           % further by looking at residual pressure. We can add that if we
-           % want. 
-           % Converts from single pressure vector to matrix separated by
-           % cycles
-           % Convert cycle times from ms to samples
-            
-           cycle_times = obj.cycleTimes;
-           cycle_seconds = cycle_times./1000;
-           cycle_samples = ceil(cycle_seconds .* obj.bFs);
+%------------RC MOVED TO ANALYSIS SUBCLASSES---------------------
+%            % Specify default parameters
+%            if nargin < 2
+%                behaviorSpec = 'phase';
+%                desiredLength = 11;
+%                startPhase = .8*pi;
+%                residual = true; 
+%            elseif nargin < 3
+%                desiredLength = 11;
+%                startPhase = .8*pi;
+%                residual = true;
+%            elseif nargin < 4
+%                startPhase = .8*pi;
+%                residual = true; 
+%            elseif nargin < 5
+%                residual = true;
+%            end
+% --------------------------------------------------------------
+           
+           % Find cycle onset times
+           cycle_times = obj.cycleTimes{1,1};
+           % Convert from onset times in seconds to samples
+           cycle_samples = ceil(cycle_times .* obj.bFs);
+           % Find the length of each cycle
            cycle_lengths = diff(cycle_samples);
+           % Find the start time in samples from the onset of each cycle
+           start_offset = ceil(cycle_lengths.*(startPhase/(2*pi)));
+           % Find the start time for each cycle from the beginning of the
+           % recording
+           start_sample = cycle_samples(1,1:end-1) + start_offset;
            
-           p = obj.behavior;
-           
-           nCycles = length(cycle_lengths);
-           cycle_pressure_wave = nan(nCycles, desiredLength);
-           
-           for cycle_ix = 1:10%cycle_ix = 1:size(cycle_samples,1)-1
-               cycle_pressure = p(cycle_samples(cycle_ix):cycle_samples(cycle_ix+1)-1);
-               resampled_cycle_pressure = resample(cycle_pressure,desiredLength,cycle_lengths(cycle_ix));
-               cycle_pressure_wave(cycle_ix, 1:desiredLength) = resampled_cycle_pressure;   
+           % Process Pressure Waves
+           processedData = processBehavior(obj);
+                               
+           % Choose phase or time sequence
+           switch(behaviorSpec)
+               case('phase')   
+                   % Specify default parameter
+                   if nargin < 6
+                       windowOfInterest = pi;
+                   end
+                   
+                   % Find lengths of windowOfInterest
+                   windowOfInterest_samples = ceil((windowOfInterest.*cycle_lengths)./(2*pi));
+                   
+                   % Find the offset time for each cycle from the beginning
+                   % of the recording
+                   stop_sample = start_sample + windowOfInterest_samples;
+                   
+                   % Set up empty matrix to store pressure data.
+                   nCycles = length(cycle_lengths);
+                   cycle_behavior = nan(nCycles, desiredLength);
+                                                          
+                   % Fill in cycles
+                   for cycle_ix = 1:nCycles
+                       % Document all of the data points for the window of
+                       % interest
+                       cycle_data = processedData(start_sample(cycle_ix):stop_sample(cycle_ix));
+                       % Resample to get only the desired number of points
+                       resampled_cycle_data = resample(cycle_data,desiredLength,length(cycle_data));
+                       cycle_behavior(cycle_ix, 1:desiredLength) = resampled_cycle_data;   
+                   end
+                   r = cycle_behavior;
+                   
+               case('time')
+                   if nargin< 6
+                       windowOfInterest = 150;
+                   end
+                   
+                   % Find lengths in samples of windowOfInterest
+                   windowOfInterest_seconds = windowOfInterest/1000;
+                   windowOfInterest_samples = windowOfInterest_seconds*obj.bFs;
+                   
+                   % Find the offset time for each cycle from the beginning
+                   % of the recording
+                   stop_sample = start_sample + windowOfInterest_samples;
+                   
+                   % Set up empty matrix to store pressure data.
+                   nCycles = length(cycle_lengths);
+                   cycle_behavior = nan(nCycles, desiredLength);
+                   
+                   % Fill in cycles
+                   for cycle_ix = 1:nCycles
+                       % Document all of the data points for the window of
+                       % interest
+                       cycle_data = processedData(start_sample(cycle_ix):stop_sample(cycle_ix));
+                       % Resample to get only the desired number of points
+                       resampled_cycle_data = resample(cycle_data,desiredLength,length(cycle_data));
+                       cycle_behavior(cycle_ix, 1:desiredLength) = resampled_cycle_data;   
+                   end
+                   r = cycle_behavior;
            end
-           r = cycle_pressure_wave;
+           if residual
+               r = obj.get_behavior_residuals(r);
+           end
        end
+       function r = get_behavior_residuals(obj, data_cycles)
+           % FOR NOW this function averages the pressure wave across the
+           % entire data set. We will need to adjust the averaging window.
+           % It is unclear how best to implement a sliding averaging
+           % window consistently across the whole data set. 
+           average_behavior = mean(data_cycles,1);
+           data_residuals = data_cycles - average_behavior;
+           r = data_residuals;
+           
+           
+       end
+           
+   
     end
 end
     

@@ -10,8 +10,8 @@ classdef calc_count_behav < mi_analysis
     methods
        function obj = calc_count_behav(objData,vars, verbose)
 
-           if length(vars) ~= 1
-               error('Expected one variable specified')
+           if size(vars,1) ~= 2
+               error('Expected two variables specified')
            end
 
            obj@mi_analysis(objData, vars);
@@ -21,27 +21,45 @@ classdef calc_count_behav < mi_analysis
 
         end
         
-        function buildMIs(obj, desiredLength, verbose)
-            if nargin < 2
-                desiredLength = 200;
-                verbose = obj.verbose;
-            elseif nargin < 3
-                verbose = obj.verbose;
-            end
+        function buildMIs(obj, behaviorSpec, desiredLength, startPhase, residual, windowOfInterest)
+           % Specify default parameters
+           if nargin < 2
+               behaviorSpec = 'phase';
+               desiredLength = 11;
+               startPhase = .8*pi;
+               residual = true; 
+           elseif nargin < 3
+               desiredLength = 11;
+               startPhase = .8*pi;
+               residual = true;
+           elseif nargin < 4
+               startPhase = .8*pi;
+               residual = true; 
+           elseif nargin < 5
+               residual = true;
+           end
 
-            % First, segment neural data into breath cycles
-  	    neuron = obj.vars(1);
-            x = obj.objData.getCount(neuron,verbose);
+            % First, segment neural data into cycles
+            switch(obj.vars{1,2})
+                case 'time'
+                    neuron = obj.vars{1,1};
+                    x = obj.objData.getCount(neuron);
+                case 'phase'
+                    fprintf('Warning: this feature has not been added yet')
+            end
             
             xGroups{1,1} = x;
-            
-            % Segment behavioral data into cycles
-            % RC- we should change this to choose what we want to do with
-            % the pressure. How do we do this? 
-            %y = obj.objData.getPressure(desiredLength, verbose);
-            % For now, we are using area under the curve for pressure
-            y = obj.objData.behavior;
+           
+            % Next, segment behavioral data into cycles
+            if nargin < 6
+                y = obj.objData.behaviorByCycles(behaviorSpec, desiredLength, startPhase, residual);
+            elseif nargin == 6
+                y = obj.objDatabehaviorByCycles(behaviorSpec, desiredLength, startPhase, residual, windowOfInterest);
+            end
+
             yGroups{1,1} = y;
+            
+            % For data with only one group, the coeff is 1. 
             
             coeffs = {1};
 

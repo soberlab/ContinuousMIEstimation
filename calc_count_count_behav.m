@@ -20,15 +20,28 @@ classdef calc_count_count_behav < mi_analysis
           end
         end
         
-        function buildMIs(obj,desiredLength, verbose)
+        function buildMIs(obj,behaviorSpec,desiredLength, startPhase,residual,windowOfInterest)
             % So I propose that we use this method to prep the
             % count_behavior data for the MI core and go ahead and run MI
             % core from here. Then we can use the output of MI core to fill
             % in the MI, kvalue, and errors.
 
-            if nargin == 1
-    	      verbose = obj.verbose;
-            end
+           % Specify default parameters
+           if nargin < 2
+               behaviorSpec = 'phase';
+               desiredLength = 11;
+               startPhase = .8*pi;
+               residual = true; 
+           elseif nargin < 3
+               desiredLength = 11;
+               startPhase = .8*pi;
+               residual = true;
+           elseif nargin < 4
+               startPhase = .8*pi;
+               residual = true; 
+           elseif nargin < 5
+               residual = true;
+           end
 
             % First, segment neuron 1 data into breath cycles
             neuron = obj.vars(1);
@@ -44,10 +57,11 @@ classdef calc_count_count_behav < mi_analysis
             % Segment behavioral data into cycles
             % RC- we should change this to choose what we want to do with
             % the pressure. How do we do this? 
-            %y = obj.objData.getPressure(desiredLength, verbose);
-            % For now, we are using area under the curve for pressure
-            y = obj.objData.behavior;
-            
+            if nargin < 6
+                y = obj.objData.behaviorByCycles(behaviorSpec, desiredLength, startPhase, residual);
+            elseif nargin == 6
+                y = obj.objDatabehaviorByCycles(behaviorSpec, desiredLength, startPhase, residual, windowOfInterest);
+            end
             
             % Set up y data
             yGroups{1,1} = y;

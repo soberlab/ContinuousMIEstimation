@@ -122,15 +122,8 @@ classdef mi_ksg_core < handle
             k_mi = zeros(1,length(ks));
             for i=1:length(ks)
                 k_ix = find([obj.mi_data{:,4}] == ks(i) & [obj.mi_data{:,3}] == 1);
-                
-                % BC-20190308: NEED TO FIGURE OUT PERMANENT FIX
-                if isempty(obj.mi_data{k_ix,1})
-                    k_mi(i) = 0;
-                else
-                    k_mi(i) = obj.mi_data{k_ix,1};
-                end
+                k_mi(i) = obj.mi_data{k_ix,1};
             end
-            
             if length(ks) > 1
                 for i=1:length(ks)
                     if i == 1
@@ -165,7 +158,7 @@ classdef mi_ksg_core < handle
                 [~,ix] = min(sum(weighted_dataFrac.^2,2));
                 obj.opt_k = ks(ix);
             else
-                obj.opt_k = ks;
+                obj.opt_k = obj.k_values;
             end
         end
         
