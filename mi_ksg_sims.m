@@ -1,4 +1,4 @@
-classdef MI_KSG_sim_manager < handle
+classdef mi_ksg_sims < handle
     % MI_KSG_sim_manager provides a structure within which mutual
     % information calculations can be run in parallel. MI_core objects are
     % added to a list and sim_manager then sets up a "master list" of data
@@ -7,6 +7,7 @@ classdef MI_KSG_sim_manager < handle
     
     properties
         verbose % set level of output for reference and debugging
+        notes = {}
         
         mi_core_arr = {} % array of mi_core objects
         
@@ -14,7 +15,7 @@ classdef MI_KSG_sim_manager < handle
         par_mode % flag to run in parallel mode
     end
     methods
-        function obj = MI_KSG_sim_manager(mode, verbose)
+        function obj = mi_ksg_sims(mode, verbose)
             if nargin == 1
                 % initialize parallel mode and default to no output
                 obj.par_mode = mode;
@@ -61,7 +62,7 @@ classdef MI_KSG_sim_manager < handle
                 end
             end
             obj.mi_core_arr = cat(1, tmp_core_arr, {obj_mi_core key}); % add core obj
-            
+            if obj.verbose > 0; disp('--> Done'); end
         end
         
         function remove_sim(obj, idx)            
@@ -108,6 +109,9 @@ classdef MI_KSG_sim_manager < handle
                 data_ixs = find(strcmp(sim_data(:,4), core_keys{key_ix}) == 1); % find data entries that belong to core obj
                 core_ix = find(strcmp([obj.mi_core_arr(:,2)], core_keys(key_ix)) == 1); % find core obj in list of mi_core
                 set_core_data(obj.mi_core_arr{core_ix}, sim_data(data_ixs,1:3)); % send data back to respective mi_core objs
+                if obj.mi_core_arr{core_ix}.opt_k == 0
+                    find_k_value(obj.mi_core_arr{core_ix}); % optimize k-value if opt_k == 0
+                end
             end
         end
         

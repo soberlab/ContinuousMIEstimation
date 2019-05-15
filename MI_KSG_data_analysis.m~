@@ -54,15 +54,16 @@ classdef MI_KSG_data_analysis < handle
               
                 while 1 % generate random key to keep track of which MI calculations belong together
                     key = num2str(dec2hex(round(rand(1)*100000)));
+                    % break the while loop if the key has not already been
+                    % assigned.
                     if ~any(strcmp(obj.arrMIcore{:,4}, key))
                         break;
                     end
                 end
-                
+                % RC: Why do we set the k values i
                 core1 = MI_KSG_core(obj.sim_manager, x, y, [3 4 5], -1);
 	            obj.arrMIcore(iGroup,:) = {core1 coeffs{iGroup,1} 0 key};
 	            % BC: The obj.findMIs function basically calls run_sims
-	            % RC- so from my understanding, we do not need the following line of code. 
             end
 	    % Sets up an MIcore object to calculate the MI values, and pushes the
 	    % data from this object to the MIcore process. 

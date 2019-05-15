@@ -1,4 +1,4 @@
-classdef MI_KSG_data < handle
+classdef mi_data < handle
     %  MI_KSG_data is used to set up a data object with all of the data
     %  for a given recording session
     % WE MAY WANT TO CHANGE PROPERTY NAMES TO GENERIC VARIABLES
@@ -15,8 +15,8 @@ classdef MI_KSG_data < handle
     end
 
     methods
-       function obj = MI_KSG_data(nFs,pFs)
-           % This function loads the spiking data raw pressure data and documents the sample frequencies
+       function obj = mi_data(nFs,pFs)
+           % This function documents the sample frequencies
            % Note that I need to add the proper functions once Bryce sends me his code  
            if nargin > 0
                obj.bFs = pFs;
@@ -39,7 +39,7 @@ classdef MI_KSG_data < handle
            obj.behavior = behavior;
        end
 
-       function r = getTiming(dataNum, verbose)
+       function r = getTiming(obj, dataNum, verbose)
            % Makes matrices of pressure data  need to decide what units to use and spiking data based on what we have      
            % NOTE- currently as the code is written, we omit any neural or pressure data that occurs	 
            % before the onset of the first cycle or after the onset of the last cycle
@@ -58,7 +58,7 @@ classdef MI_KSG_data < handle
            cycle_ts = obj.cycleTimes;
 
            % Find the number of spikes in each cycle
-           cycle_spike_counts = getCount(dataNum, verbose);
+           cycle_spike_counts = obj.getCount(dataNum, verbose);
 
            % Calculate relative spike times for each breathing cycle
            if verbose > 1; disp('-> Calculating relative spike times by cycle'); end
@@ -73,12 +73,14 @@ classdef MI_KSG_data < handle
        
        end
        
-       function r = getCount(dataNum, verbose)
+       function r = getCount(obj, dataNum, verbose)
            spike_ts = obj.neurons{dataNum};
            cycle_ts = obj.cycleTimes;
 
            % Find the number of spikes in each cycle
-           cycle_spike_counts = zeros(1,size(cycle_ts,1));
+           % We include data that comes after the onset of the first cycle
+           % and before the onset of the last cycle
+           cycle_spike_counts = zeros(1,size(cycle_ts,1)-1);
            for cycle_ix = 1:(size(cycle_ts,1)-1)
                cycle_spikes_ix = find((spike_ts > cycle_ts(cycle_ix)) & (spike_ts < cycle_ts(cycle_ix+1)));
                if ~isempty(cycle_spikes_ix)
@@ -88,7 +90,7 @@ classdef MI_KSG_data < handle
            r = cycle_spike_counts;
        end
        
-       function r = getPressure(desiredLength, verbose)
+       function r = getPressure(obj, desiredLength, verbose)
            % desiredLength- the number of pressure dimensions you want to
            % include. 
 
@@ -106,7 +108,7 @@ classdef MI_KSG_data < handle
             
            cycle_times = obj.cycleTimes;
            cycle_seconds = cycle_times./1000;
-           cycle_samples = cycle_seconds .* obj.pFs;
+           cycle_samples = ceil(cycle_seconds .* obj.bFs);
            cycle_lengths = diff(cycle_samples);
            
            p = obj.behavior;
@@ -114,10 +116,10 @@ classdef MI_KSG_data < handle
            nCycles = length(cycle_lengths);
            cycle_pressure_wave = nan(nCycles, desiredLength);
            
-           for cycle_ix = 1:size(cycle_samples,1)-1
-               cycle_pressure = p(cycle_samples(cycle_ix):cycle_samples(cycle_ix+1));
+           for cycle_ix = 1:10%cycle_ix = 1:size(cycle_samples,1)-1
+               cycle_pressure = p(cycle_samples(cycle_ix):cycle_samples(cycle_ix+1)-1);
                resampled_cycle_pressure = resample(cycle_pressure,desiredLength,cycle_lengths(cycle_ix));
-               cycle_pressure_wave(cycle_ix, 1:desiredLength) = resampled_cycle_pressure;
+               cycle_pressure_wave(cycle_ix, 1:desiredLength) = resampled_cycle_pressure;   
            end
            r = cycle_pressure_wave;
        end
