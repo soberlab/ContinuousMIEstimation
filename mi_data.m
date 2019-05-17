@@ -39,8 +39,15 @@ classdef mi_data < handle
            % BC-20190123: Added function
            obj.behavior = behavior;
        end
+       function add_params(varargin)
+           % Specifies the parameters that will be used for the data. 
+            if rem(varargin,2) ~= 0
+                error('Expected nargin to be divisible by 2');
+            end
+            
+       end
        
-       function get_cycleTimes(obj,cycleFreq, cutoffFreq)
+       function make_cycleTimes(obj,cycleFreq, cutoffFreq)
            % This function takes in raw behavioral data, applies a low pass filter
            % and identifies the onset of cycle times based on the
            % negative peaks. 
