@@ -40,7 +40,8 @@ classdef mi_data < handle
            obj.behavior = behavior;
        end
        
-       function get_cycleTimes(obj,cycleFreq, cutoffFreq)
+       % BC 20190515: Get implies return function; use "make" or "build"
+       function get_cycleTimes(obj, cycleFreq, cutoffFreq)
            % This function takes in raw behavioral data, applies a low pass filter
            % and identifies the onset of cycle times based on the
            % negative peaks. 
@@ -81,6 +82,7 @@ classdef mi_data < handle
            behaviorForPeaks = -1*behavhiorSmoothed;
            [pks, locs] = findpeaks(behaviorForPeaks,Fs, 'MinPeakDistance', cycleLengthSeconds/1.3);
            
+           % BC 20190515: struct may come with additional overhead
            obj.cycleTimes = {locs,pks};
        end
        
@@ -164,6 +166,9 @@ classdef mi_data < handle
        end
        
        
+       % BC 20190515: change to get_behavior
+       % BC 20190515: All analysis classes will only need to call three
+       % class methods: get_count, get_timing, get_behavior
        function r = behaviorByCycles(obj, behaviorSpec, desiredLength, startPhase, residual, windowOfInterest)
            % behaviorSpec - 'phase' or 'time' - indicating whether you want
            % to include pressure as a phase or time variable
@@ -206,6 +211,7 @@ classdef mi_data < handle
            % Choose phase or time sequence
            switch(behaviorSpec)
                case('phase')   
+                   % BC 20190515: Return behavior as.....
                    % Specify default parameter
                    if nargin < 6
                        windowOfInterest = pi;
@@ -234,6 +240,7 @@ classdef mi_data < handle
                    r = cycle_behavior;
                    
                case('time')
+                   % BC 20190515: Return behavior as ...
                    if nargin< 6
                        windowOfInterest = 150;
                    end
@@ -265,6 +272,10 @@ classdef mi_data < handle
                r = obj.get_behavior_residuals(r);
            end
        end
+       
+       % BC 20190515: move this to get_behaviorbycycles function
+       % BC 20190515: analysis classes only see get_behaviorbycycles
+       % function call and then a parameter specifies "resid" or "wave"
        function r = get_behavior_residuals(obj, data_cycles)
            % FOR NOW this function averages the pressure wave across the
            % entire data set. We will need to adjust the averaging window.
