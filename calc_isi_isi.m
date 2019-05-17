@@ -7,19 +7,21 @@ classdef calc_isi_isi < mi_analysis
     properties
         isi_cutoff % ms
         isi_offset % number of ISIs to offset
+        noise % ms; std of noise to add to isi
     end
     
     methods
 
 
-        function obj = calc_isi_isi(objData, vars, isi_offset, isi_cutoff, verbose)
+        function obj = calc_isi_isi(objData, vars, isi_offset, isi_cutoff, noise, verbose)
             % var1 is a positive integer to indicate neuron number
             
             % BC 20190124: ADD CHECK TO SEE IF vars INCLUDES NEURONS FROM objData
             
             if nargin < 3; isi_offset = 1; end
             if nargin < 4; isi_cutoff = 200; end
-            if nargin < 5; verbose = 1; end
+            if nargin < 5; noise = 0; end
+            if nargin < 6; verbose = 1; end
             
             if length(vars) > 1
                 error('Expected one variable specified.');
@@ -28,6 +30,7 @@ classdef calc_isi_isi < mi_analysis
             obj@mi_analysis(objData, vars);
             obj.isi_offset = isi_offset;
             obj.isi_cutoff = isi_cutoff;
+            obj.noise = noise;
             obj.verbose = verbose;            
         end
         
@@ -40,6 +43,9 @@ classdef calc_isi_isi < mi_analysis
             if nargin == 1
                 verbose = obj.verbose;
             end
+            
+            % BC-20190308: NEED TO ADD FLAG FOR THIS
+            shuffle = false;
             
             % First, get spike times from neuron
             spikeTimes = obj.objData.neurons{obj.vars(1)};
@@ -54,17 +60,43 @@ classdef calc_isi_isi < mi_analysis
             
             % Find ISIs from spike times
             ISIs = diff(spikeTimes);
+            if shuffle
+                ISIs = ISIs(randperm(length(ISIs)));
+            end
+            
+            % BC-20190308: Changed to check for sum of consecutive ISI            
             % Check ISIs against cutoff. 
-            ISIs = ISIs(find(ISIs < obj.isi_cutoff));
+%             ISIs = ISIs(find(ISIs < obj.isi_cutoff));
+
+            consec_sum = sum([ISIs(1:end-1)' ISIs(2:end)'], 2);
+            select_isi = consec_sum <= obj.isi_cutoff;
+            ISIs = ISIs(select_isi);
+            
+            % should this be normrnd(0,noise)?
+            jitter = obj.noise*randn(size(ISIs));
+            mi_isis = ISIs + jitter;
+
             
             offset = obj.isi_offset;
+
             % Make a vector of the first ISIs
-            x = ISIs(1:end-offset);
-            xGroups{1,1} = x;
+            x = mi_isis(1:end-offset);
             
+            avg_x = mean(x);
+            std_x = std(x);
+            
+            xGroups{1,1} = (x-avg_x)/std_x;
+%             xGroups{1,1} = x;
+            
+
             % Make a vector of the second ISIs
-            y = ISIs(offset+1:end);
-            yGroups{1,1} = y;
+            y = mi_isis(offset+1:end);
+            
+            avg_y = mean(y);
+            std_y = std(y);
+            
+            yGroups{1,1} = (y-avg_y)/std_y;
+%             yGroups{1,1} = y;
             
             coeffs = {1};
             
