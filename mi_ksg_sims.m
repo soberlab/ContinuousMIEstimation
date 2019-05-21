@@ -7,6 +7,7 @@ classdef mi_ksg_sims < handle
     
     properties
         verbose % set level of output for reference and debugging
+        notes = {}
         
         mi_core_arr = {} % array of mi_core objects
         
@@ -61,7 +62,7 @@ classdef mi_ksg_sims < handle
                 end
             end
             obj.mi_core_arr = cat(1, tmp_core_arr, {obj_mi_core key}); % add core obj
-            
+            if obj.verbose > 0; disp('--> Done'); end
         end
         
         function remove_sim(obj, idx)            

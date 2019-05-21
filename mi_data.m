@@ -243,9 +243,11 @@ classdef mi_data < handle
            behaviorForPeaks = -1*behaviorSmoothed;
            [pks, locs] = findpeaks(behaviorForPeaks,Fs, 'MinPeakDistance', cycleLengthSeconds/1.3);
            
-           % BC 20190515: struct may come with additional overhead
+           % BC 20190515: struct may come with additional overheadx
            % RC 20190520: I don't remember how we wanted to change this...
            Times = {locs,pks};
+           obj.cycleTimes = Times;
+
        end
        
        function [filterData] = filterBehavior(obj, behavior, cycleFreq, filterFreq)

@@ -28,14 +28,14 @@ classdef calc_count_count < mi_analysis
        	    x = obj.objData.getCount(neuron,verbose);
 
             % Set groups that will serve as x variable
-            xGroups{1,1} = x;
+            xGroups{1,1} = x + normrnd(0, 1e-4);
             
             % Next find spike count for neuron 2
             neuron = obj.vars(2);
             y = obj.objData.getCount(neuron,verbose);
 
             % Set groups that will serve as y variable
-            yGroups{1,1} = y;
+            yGroups{1,1} = y + normrnd(0, 1e-4);
 
             % Set coefficients for groups
             coeffs = {1};

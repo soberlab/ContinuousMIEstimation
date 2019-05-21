@@ -1,3 +1,19 @@
+%% THINK ABOUT THIS
+% 1. Upload data and instantiate data object
+% 2. Format data (i.e., phase, timing, etc.)
+% 3. Run analysis class
+% 4. Make plots
+% 5. Repeat 2 - 4 for different variable/formatting combinations
+
+% For auditing purposes, we probably need to include in the analysis
+% object, a single struct that copies the parameters of data parameters adn
+% stores it for good will
+
+% It might actually be most advantageous to create another class.... for
+% storing results objects --> this would include, sims objects and
+% parameters.
+
+
 %% DATA ANALYSIS SAMPLE SCRIPT
 close('all');
 

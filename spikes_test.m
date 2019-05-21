@@ -49,3 +49,4 @@ links.n1.s5.x1 = [ ...
 link_words(spikes, links);
 
 G = show_graph(spikes);
+show_words(spikes);

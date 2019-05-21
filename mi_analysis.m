@@ -67,7 +67,7 @@ classdef mi_analysis < handle
                 end
                 % RC: Why do we set the k values in the core object and in
                 % the arrMIcore?
-                core1 = mi_ksg_core(obj.sim_manager, x, y, [3 4 5], -1);
+                core1 = mi_ksg_core(obj.sim_manager, x, y, 3:8, 0);
 	            obj.arrMIcore(iGroup,:) = {core1 coeffs{iGroup,1} 0 key};
 	            % BC: The obj.findMIs function basically calls run_sims
             end
