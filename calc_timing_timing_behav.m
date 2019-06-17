@@ -12,39 +12,21 @@ classdef calc_timing_timing_behav < mi_analysis
     end
     
     methods
-       function obj = calc_timing_timing_behav(objData,vars, verbose)
+       function obj = calc_timing_timing_behav(objData,vars)
             if length(vars) ~= 2
                 error('Expected two variables specified');
             end
 
             obj@mi_analysis(objData, vars);
-            if nargin < 3 
-                obj.verbose = 1; 
-            end
+
         end
         
-        function buildMIs(obj, behaviorSpec, desiredLength, startPhase, residual, windowOfInterest)
+        function buildMIs(obj)
             % So I propose that we use this method to prep the
             % count_behavior data for the MI core and go ahead and run MI
             % core from here. Then we can use the output of MI core to fill
             % in the MI, kvalue, and errors.
             
-           % Specify default parameters
-           if nargin < 2
-               behaviorSpec = 'phase';
-               desiredLength = 11;
-               startPhase = .8*pi;
-               residual = true; 
-           elseif nargin < 3
-               desiredLength = 11;
-               startPhase = .8*pi;
-               residual = true;
-           elseif nargin < 4
-               startPhase = .8*pi;
-               residual = true; 
-           elseif nargin < 5
-               residual = true;
-           end
 
             % First, segment neural data into breath cycles
             neuron = obj.vars(1);
@@ -66,9 +48,9 @@ classdef calc_timing_timing_behav < mi_analysis
             % Segment behavioral data into cycles
 
             if nargin < 6
-                y = obj.objData.behaviorByCycles(behaviorSpec, desiredLength, startPhase, residual);
+                y = obj.objData.processBehavior();
             elseif nargin == 6
-                y = obj.objDatabehaviorByCycles(behaviorSpec, desiredLength, startPhase, residual, windowOfInterest);
+                y = obj.objData.processBehavior();
             end
             
             %Both neurons collectively will make up the x group. We will

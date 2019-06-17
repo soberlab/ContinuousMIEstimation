@@ -8,7 +8,7 @@ classdef calc_timing_behav < mi_analysis
     end
     
     methods
-       function obj = calc_timing_behav(objData,vars, verbose)
+       function obj = calc_timing_behav(objData,vars)
             % vars - 2 x 1 vector specifying neuron numbers
 
             if length(vars) ~= 2
@@ -16,49 +16,29 @@ classdef calc_timing_behav < mi_analysis
             end
 
             obj@mi_analysis(objData, vars);
-            if nargin < 3 
-                obj.verbose = 1; 
-            end
 
         end
         
-        function buildMIs(obj, behaviorSpec, desiredLength,startPhase, residual, windowOfInterest)
+        function buildMIs(obj)
             % So I propose that we use this method to prep the
             % count_behavior data for the MI core and go ahead and run MI
             % core from here. Then we can use the output of MI core to fill
             % in the MI, kvalue, and errors.
-           % Specify default parameters
-           if nargin < 2
-               behaviorSpec = 'phase';
-               desiredLength = 11;
-               startPhase = .8*pi;
-               residual = true; 
-           elseif nargin < 3
-               desiredLength = 11;
-               startPhase = .8*pi;
-               residual = true;
-           elseif nargin < 4
-               startPhase = .8*pi;
-               residual = true; 
-           elseif nargin < 5
-               residual = true;
-           end
+
             % First, segment neural data into breath cycles
             neuron = obj.vars(1);
-            x = obj.objData.getTiming(neuron,verbose);
+            x = obj.objData.getTiming(neuron);
            
             % Find different subgroups
-            xCounts = obj.objData.getCount(neuron,verbose);
+            xCounts = obj.objData.getCount(neuron);
             xConds = unique(xCounts);
 
             % Segment behavioral data into cycles
             % RC- we should change this to choose what we want to do with
             % the pressure. How do we do this? 
-            if nargin < 6
-                y = obj.objData.behaviorByCycles(behaviorSpec, desiredLength, startPhase, residual);
-            elseif nargin == 6
-                y = obj.objDatabehaviorByCycles(behaviorSpec, desiredLength, startPhase, residual, windowOfInterest);
-            end
+
+            y = obj.objData.processBehavior();
+
 
 
             % Figure out how each subgroup is going to feed into the 
@@ -106,7 +86,7 @@ classdef calc_timing_behav < mi_analysis
                 yGroups{groupCount,1} = y(groupIdx);
                 groupCount = groupCount + 1;
             end
-            buildMIs@mi_analysis(obj, {xGroups yGroups coeffs},verbose); 
+            buildMIs@mi_analysis(obj, {xGroups yGroups coeffs}); 
    
         end
     end

@@ -13,7 +13,7 @@ classdef calc_isi_isi < mi_analysis
     methods
 
 
-        function obj = calc_isi_isi(objData, vars, isi_offset, isi_cutoff, noise, verbose)
+        function obj = calc_isi_isi(objData, vars, isi_offset, isi_cutoff, noise)
             % var1 is a positive integer to indicate neuron number
             
             % BC 20190124: ADD CHECK TO SEE IF vars INCLUDES NEURONS FROM objData
@@ -21,7 +21,6 @@ classdef calc_isi_isi < mi_analysis
             if nargin < 3; isi_offset = 1; end
             if nargin < 4; isi_cutoff = 200; end
             if nargin < 5; noise = 0; end
-            if nargin < 6; verbose = 1; end
             
             if length(vars) > 1
                 error('Expected one variable specified.');
@@ -31,18 +30,16 @@ classdef calc_isi_isi < mi_analysis
             obj.isi_offset = isi_offset;
             obj.isi_cutoff = isi_cutoff;
             obj.noise = noise;
-            obj.verbose = verbose;            
+            
         end
         
-        function buildMIs(obj, verbose)
+        function buildMIs(obj)
             % So I propose that we use this method to prep the
             % count_behavior data for the MI core and go ahead and run MI
             % core from here. Then we can use the output of MI core to fill
             % in the MI, kvalue, and errors.
             
-            if nargin == 1
-                verbose = obj.verbose;
-            end
+
             
             % BC-20190308: NEED TO ADD FLAG FOR THIS
             shuffle = false;
@@ -100,7 +97,7 @@ classdef calc_isi_isi < mi_analysis
             
             coeffs = {1};
             
-            buildMIs@mi_analysis(obj, {xGroups yGroups coeffs}, verbose);
+            buildMIs@mi_analysis(obj, {xGroups yGroups coeffs});
         end
     end
 end

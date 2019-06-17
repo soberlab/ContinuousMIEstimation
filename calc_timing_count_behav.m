@@ -12,7 +12,7 @@ classdef calc_timing_count_behav < mi_analysis
     end
     
     methods
-      function obj = calc_timing_count_behav(objData, vars, verbose)
+      function obj = calc_timing_count_behav(objData, vars)
             % vars - 2 x 1 vector specifying neuron numbers
 
             if length(vars) ~= 2
@@ -25,27 +25,13 @@ classdef calc_timing_count_behav < mi_analysis
             end
         end
         
-        function buildMIs(obj, behaviorSpec, desiredLength,startPhase, residual, windowOfInterest)
+        function buildMIs(obj)
             % So I propose that we use this method to prep the
             % count_behavior data for the MI core and go ahead and run MI
             % core from here. Then we can use the output of MI core to fill
             % in the MI, kvalue, and errors.
            % Specify default parameters
-           if nargin < 2
-               behaviorSpec = 'phase';
-               desiredLength = 11;
-               startPhase = .8*pi;
-               residual = true; 
-           elseif nargin < 3
-               desiredLength = 11;
-               startPhase = .8*pi;
-               residual = true;
-           elseif nargin < 4
-               startPhase = .8*pi;
-               residual = true; 
-           elseif nargin < 5
-               residual = true;
-           end
+
             
             % First, segment neural data into breath cycles
             neuron = obj.vars(1);
@@ -60,13 +46,7 @@ classdef calc_timing_count_behav < mi_analysis
             n2Counts = obj.objData.getCount(neuron);
             
             % Segment behavioral data into cycles
-            % The following function has MANY optional arguments. It is
-            % unclear at what level to specify these arguments
-            if nargin < 6
-                y = obj.objData.behaviorByCycles(behaviorSpec, desiredLength, startPhase, residual);
-            elseif nargin == 6
-                y = obj.objDatabehaviorByCycles(behaviorSpec, desiredLength, startPhase, residual, windowOfInterest);
-            end
+            y = obj.objData.processBehavior();
             
             %Both neurons collectively will make up the x group. We will
             %concatonate each condition. 
