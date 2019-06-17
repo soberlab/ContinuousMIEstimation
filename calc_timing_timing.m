@@ -12,18 +12,16 @@ classdef calc_timing_timing < mi_analysis
     end
     
     methods
-       function obj = calc_timing_timing(objData,vars, verbose)
+       function obj = calc_timing_timing(objData,vars)
             if length(vars) ~= 2
                 error('Expected two variables specified');
             end
 
             obj@mi_analysis(objData, vars);
-            if nargin < 3 
-                obj.verbose = 1; 
-            end
+
         end
         
-       function buildMIs(obj, verbose)
+       function buildMIs(obj)
             % So I propose that we use this method to prep the
             % count_behavior data for the MI core and go ahead and run MI
             % core from here. Then we can use the output of MI core to fill
@@ -31,18 +29,18 @@ classdef calc_timing_timing < mi_analysis
             
             % First, segment neural data into breath cycles
             neuron = obj.vars(1);
-            x = obj.objData.getTiming(neuron,verbose);
+            x = obj.objData.getTiming(neuron);
            
             % Find different subgroups for neuron 1
-            xCounts = obj.objData.getCount(neuron,verbose);
+            xCounts = obj.objData.getCount(neuron);
             xConds = unique(xCounts);
 
             % Segment neuron 2 into breath cycles
             neuron = obj.vars(2);
-            y = obj.objData.getTiming(neuron,verbose);
+            y = obj.objData.getTiming(neuron);
 
             % Find different subgroups for neuron 2
-            yCounts = obj.objData.getCount(neuron,verbose);
+            yCounts = obj.objData.getCount(neuron);
             yConds = unique(yCounts);
             
             % AS WRITTEN- we put each subgroup for the calculation into an array. 
@@ -104,7 +102,7 @@ classdef calc_timing_timing < mi_analysis
                 end
             end
             
-           buildMIs@mi_analysis(obj, {xGroups yGroups coeffs},verbose);     
+           buildMIs@mi_analysis(obj, {xGroups yGroups coeffs});     
             
         end
     end

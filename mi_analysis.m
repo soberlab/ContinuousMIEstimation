@@ -2,7 +2,6 @@ classdef mi_analysis < handle
     %  MI_KSG_data_analysis is a parent class used to set up a separate object for each pair of variables to feed into the MI calculations
     % 
     properties
-        verbose
         
         vars % 2 x Nvariables list integer {(-1 OR 1-Nneurons), 'phase' or 'time';...}
              % which indicates whether to take in the pressure or which neuron
@@ -39,7 +38,7 @@ classdef mi_analysis < handle
             %obj.sim_manager = mi_ksg_sims();
         end
 
-        function buildMIs(obj, mi_data, verbose)
+        function buildMIs(obj, mi_data)
             % NOTE- we still need to change the default k-value for this. 
 	        % BC: Move his for loop into the constructor for MI_KSG_data_analysis subclasses- DONE
             obj.arrMIcore = cell(size(mi_data,1),4);
