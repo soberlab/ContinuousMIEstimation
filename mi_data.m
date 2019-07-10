@@ -108,6 +108,7 @@ classdef mi_data < handle
             if size(behavior,1) == 1
 
                 % Set optional inputs relevant for obtaining cycle times
+                % --> BC 20190710: add an object parameter that is a struct of arguments used to analyze behavior cycles
                 p.addOptional('cycleFreq',2);
                 p.addOptional('cutoffFreq',10);
                 p.addOptional('filterFreq', 100)
