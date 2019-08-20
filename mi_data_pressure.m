@@ -16,6 +16,7 @@ classdef mi_data_pressure < mi_data_behavior
         function calc_cycles(obj, method)
             %% take raw pressure data, segment into cycles, save MAT file, calc onset times
             
+            % Need to add Parser input to validate method
             obj.cycleMethod = method;
             
             cycle_wavs = [];
@@ -48,6 +49,7 @@ classdef mi_data_pressure < mi_data_behavior
                         cycle_len(bad_cycle) = [];
                     end
                     
+                    % plot resulting behavior cycles to visualize analysis
                     if obj.verbose > 2
                         figure();
                         plot(pressure_ts, pressure_wav, 'k-', 'LineWidth', 2);
@@ -58,6 +60,7 @@ classdef mi_data_pressure < mi_data_behavior
                     end
                 end
             
+                % populate data structures
                 tmp_cycle_wavs = nan(length(cycle_ixs), max(cycle_len));   
                 
                 for j=1:length(cycle_ixs)-1
@@ -79,6 +82,8 @@ classdef mi_data_pressure < mi_data_behavior
                 disp('waiting...');
             
             end
+            
+            % save data in object
             obj. cycleData = cycle_wavs;
         end
         
