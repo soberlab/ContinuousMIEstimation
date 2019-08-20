@@ -16,7 +16,19 @@ neural_data.add_spikes(unit2_ts, 'n_timebase', 'phase');
 
 
 %% Load pressure data
-load('D:/EMG_Data/chung/for_analysis/bl21lb21_20171218/bl21lb21_trial1_ch1_ch16/bl21lb21_171218_dtvw-pressure.mat');
+
+% remember current directory and navigate to folder with data files
+dat_pressure = mi_data_pressure('verbose', 3);
+
+old_dir = cd('D:/EMG_Data/chung/for_analysis/bl21lb21_20171218/bl21lb21_trial1_ch1_ch16/');
+
+set_source(dat_pressure, dir('*.rhd')); % use all data RHD data files
+calc_cycles(dat_pressure, 'threshold');
+
+cd(old_dir); % return working directory to original location
+
+% add behavior object to mi_data object
+neural_data.add_behavior(dat_pressure);
 
 %% Calculate mutual information for consecutive ISI of neural data Unit 1
 
