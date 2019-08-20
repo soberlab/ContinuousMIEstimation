@@ -9,6 +9,7 @@ classdef mi_data < handle
         n_timebase % either 'phase' or 'time'
         behavior % N x n vector of the continuous pressure where N is the total cycles and n is the maximum 
                  % number of samples per cycle
+        obj_behav % behavioral data object
         cycleTimes % {1 x 2} array with 1: 1 x N vector of onset times in seconds of each breath cycle
                     % and 2: 1 x N vector of the peaks corresponding to the breathcycles
                     % where N is the total number of breath cycles 
@@ -105,46 +106,48 @@ classdef mi_data < handle
             end
 
             % Convert behavior to cycles if its not already in cycles
-            if size(behavior,1) == 1
-
-                % Set optional inputs relevant for obtaining cycle times
-                % --> BC 20190710: add an object parameter that is a struct of arguments used to analyze behavior cycles
-                p.addOptional('cycleFreq',2);
-                p.addOptional('cutoffFreq',10);
-                p.addOptional('filterFreq', 100)
-                parse(p,behavior);            
-% --------------Consider making this into a separate function-----------
-                % Add cycle times to object. 
-                obj.cycleTimes = obj.make_cycleTimes(behavior, p.Results.cycleFreq, p.Results.cutoffFreq);
-
-               % Find cycle onset times
-               cycle_times = obj.cycleTimes{1,1};
-               % Convert from onset times in seconds to samples
-               cycle_samples = ceil(cycle_times .* obj.bFs);
-               % Find the length of each cycle
-               cycle_lengths = diff(cycle_samples);
-
-               % Find maximum cycle length
-               maxLength = max(cycle_lengths);
-
-               % Find total number of cycles
-               nCycles = length(cycle_lengths);
-
-               % Make an NaN matrix to hold cycle data. 
-               behaviorCycles = nan(nCycles,maxLength);
-
-               % Filter Pressure Waves
-               filterData = obj.filterBehavior(behavior, p.Results.cycleFreq,p.Results.filterFreq);
-
-                % Assign pressure waves to matrix rows
-                for iCycle = 1:nCycles
-                    behaviorCycles(iCycle,1:cycle_lengths(iCycle)) = filterData(cycle_samples(iCycle):(cycle_samples(iCycle+1)-1));
-                end
-%-----------------------------------------------------------------------
-                % Store behavior
-                obj.behavior = behaviorCycles;
-            end
-            
+            % --> BC 20190820: this is taken care of by pressure cycle
+            % class
+%             if size(behavior,1) == 1
+% 
+%                 % Set optional inputs relevant for obtaining cycle times
+%                 % --> BC 20190710: add an object parameter that is a struct of arguments used to analyze behavior cycles
+%                 p.addOptional('cycleFreq',2);
+%                 p.addOptional('cutoffFreq',10);
+%                 p.addOptional('filterFreq', 100)
+%                 parse(p,behavior);            
+% % --------------Consider making this into a separate function-----------
+%                 % Add cycle times to object. 
+%                 obj.cycleTimes = obj.make_cycleTimes(behavior, p.Results.cycleFreq, p.Results.cutoffFreq);
+% 
+%                % Find cycle onset times
+%                cycle_times = obj.cycleTimes{1,1};
+%                % Convert from onset times in seconds to samples
+%                cycle_samples = ceil(cycle_times .* obj.bFs);
+%                % Find the length of each cycle
+%                cycle_lengths = diff(cycle_samples);
+% 
+%                % Find maximum cycle length
+%                maxLength = max(cycle_lengths);
+% 
+%                % Find total number of cycles
+%                nCycles = length(cycle_lengths);
+% 
+%                % Make an NaN matrix to hold cycle data. 
+%                behaviorCycles = nan(nCycles,maxLength);
+% 
+%                % Filter Pressure Waves
+%                filterData = obj.filterBehavior(behavior, p.Results.cycleFreq,p.Results.filterFreq);
+% 
+%                 % Assign pressure waves to matrix rows
+%                 for iCycle = 1:nCycles
+%                     behaviorCycles(iCycle,1:cycle_lengths(iCycle)) = filterData(cycle_samples(iCycle):(cycle_samples(iCycle+1)-1));
+%                 end
+% %-----------------------------------------------------------------------
+%                 % Store behavior
+%                 obj.behavior = behaviorCycles;
+%             end
+            obj.obj_behav = behavior;
 
             % Set behavioral property defaults
             default_b_timebase = 'phase';
@@ -242,45 +245,48 @@ classdef mi_data < handle
 
        end
        
-       function [Times] = make_cycleTimes(obj, behavior, cycleFreq, cutoffFreq)
-           % This function takes in raw behavioral data, applies a low pass filter
-           % and identifies the onset of cycle times based on the
-           % negative peaks. 
-           % NOTE- this function does not deal with cycles that need to be
-           % omitted. 
-           % Set sample Frequency
-           Fs = obj.bFs;
-           
-           % Convert cycle frequency to Samples
-           cycleLengthSeconds = 1/cycleFreq;
-           cycleLengthSamples = cycleLengthSeconds*Fs;           
+%        function [Times] = make_cycleTimes(obj, behavior, cycleFreq, cutoffFreq)
+%         function make_cycleTimes(obj)
+%            % This function takes in raw behavioral data, applies a low pass filter
+%            % and identifies the onset of cycle times based on the
+%            % negative peaks. 
+%            % NOTE- this function does not deal with cycles that need to be
+%            % omitted. 
+%            % Set sample Frequency
+%            Fs = obj.bFs;
+%            
+%            % Convert cycle frequency to Samples
+%            cycleLengthSeconds = 1/cycleFreq;
+%            cycleLengthSamples = cycleLengthSeconds*Fs;           
+% 
+%            % Convert cutoff freq to width of gaussian in samples
+%            cutoffSeconds = 1/cutoffFreq;
+%            cutoffSamples = cutoffSeconds*Fs;
+% 
+%            % Find alpha value for input into gausswin Function
+%            alpha = (cycleLengthSamples - 1)/(2*cutoffSamples);
+%            
+%            % Generate Gaussian Window
+%            g = gausswin(cycleLengthSamples,alpha);
+% 
+%            % Convolve the gaussian window with the behavior data
+%            behaviorSmoothed = conv(behavior,g,'same');
+% 
+%            % Find the negative peaks of the pressure cycles to determine the onset
+%            % times
+% 
+%            % We use the negative pressure vector to find negative peaks
+%            behaviorForPeaks = -1*behaviorSmoothed;
+%            [pks, locs] = findpeaks(behaviorForPeaks,Fs, 'MinPeakDistance', cycleLengthSeconds/1.3);
+%            
+%            % BC 20190515: struct may come with additional overheadx
+%            % RC 20190520: I don't remember how we wanted to change this...
+%            Times = {locs,pks};
+%            obj.cycleTimes = Times;
 
-           % Convert cutoff freq to width of gaussian in samples
-           cutoffSeconds = 1/cutoffFreq;
-           cutoffSamples = cutoffSeconds*Fs;
+%             obj.cycleTimes = obj.obj_behav.cycleTimes; % reference times out of pressure data object
 
-           % Find alpha value for input into gausswin Function
-           alpha = (cycleLengthSamples - 1)/(2*cutoffSamples);
-           
-           % Generate Gaussian Window
-           g = gausswin(cycleLengthSamples,alpha);
-
-           % Convolve the gaussian window with the behavior data
-           behaviorSmoothed = conv(behavior,g,'same');
-
-           % Find the negative peaks of the pressure cycles to determine the onset
-           % times
-
-           % We use the negative pressure vector to find negative peaks
-           behaviorForPeaks = -1*behaviorSmoothed;
-           [pks, locs] = findpeaks(behaviorForPeaks,Fs, 'MinPeakDistance', cycleLengthSeconds/1.3);
-           
-           % BC 20190515: struct may come with additional overheadx
-           % RC 20190520: I don't remember how we wanted to change this...
-           Times = {locs,pks};
-           obj.cycleTimes = Times;
-
-       end
+%        end
        
        function [filterData] = filterBehavior(obj, behavior, cycleFreq, filterFreq)
            % This function prepares the raw behavioral data for analysis
@@ -317,7 +323,8 @@ classdef mi_data < handle
            % if verbose > 1; disp([newline 'Running: dataByCycles' newline]); end
 
            spike_ts = obj.neurons{dataNum};
-           cycle_ts = obj.cycleTimes{1,1};
+%            cycle_ts = obj.cycleTimes{1,1};
+           cycle_ts = obj.obj_behav.cycleTimes'*1000.; % BC20190820
 
            % Find the number of spikes in each cycle
            cycle_spike_counts = obj.getCount(dataNum);
@@ -355,7 +362,8 @@ classdef mi_data < handle
        
        function r = getCount(obj, dataNum)
            spike_ts = obj.neurons{dataNum};
-           cycle_ts = obj.cycleTimes{1,1};
+%            cycle_ts = obj.cycleTimes{1,1};
+            cycle_ts = obj.obj_behav.cycleTimes'*1000.; % BC 20190820
 
            % Find the number of spikes in each cycle
            % We include data that comes after the onset of the first cycle
