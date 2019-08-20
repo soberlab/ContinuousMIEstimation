@@ -8,32 +8,30 @@ classdef calc_timing_count < mi_analysis
     end
     
     methods
-        function obj = calc_timing_count(objData,vars, verbose)
+        function obj = calc_timing_count(objData,vars)
             % vars - 2 x 1 vector specifying neuron numbers
 
             if length(vars) ~= 2
-                error('Expected two variables specified');
+                error('Expected 2 variables specified');
             end
 
             obj@mi_analysis(objData, vars);
-            if nargin < 3 
-                obj.verbose = 1; 
-            end
+
         end
         
-        function buildMIs(obj, verbose)
+        function buildMIs(obj)
 % Build the data and core objects necessary to run the sim manager for this analysis class            
             % First, segment neural data into breath cycles
             neuron = obj.vars(1);
-            x = obj.objData.getTiming(neuron,verbose);
+            x = obj.objData.getTiming(neuron);
            
             % Find different subgroups
-            xCounts = obj.objData.getCount(neuron,verbose);
+            xCounts = obj.objData.getCount(neuron);
             xConds = unique(xCounts);
 
             % Next segment other neuron into cycles and find the count
             neuron = obj.vars(2);
-            y = obj.objData.getCount(neuron,verbose);
+            y = obj.objData.getCount(neuron);
 
 
             % AS WRITTEN- we put each subgroup for the calculation into an array. 
@@ -79,7 +77,7 @@ classdef calc_timing_count < mi_analysis
                 groupCount = groupCount + 1;
             end
 	    
-            buildMIs@mi_analysis(obj, {xGroups yGroups coeffs},verbose);          
+            buildMIs@mi_analysis(obj, {xGroups yGroups coeffs});          
             
         end
     end

@@ -8,36 +8,18 @@ classdef calc_count_behav < mi_analysis
     end
     
     methods
-       function obj = calc_count_behav(objData,vars, verbose)
+       function obj = calc_count_behav(objData,vars)
 
            if size(vars,1) ~= 2
                error('Expected two variables specified')
            end
 
            obj@mi_analysis(objData, vars);
-           if nargin < 3 
-               obj.verbose = 1; 
-           end
+
 
         end
         
-        function buildMIs(obj, behaviorSpec, desiredLength, startPhase, residual, windowOfInterest)
-           % Specify default parameters
-           if nargin < 2
-               behaviorSpec = 'phase';
-               desiredLength = 11;
-               startPhase = .8*pi;
-               residual = true; 
-           elseif nargin < 3
-               desiredLength = 11;
-               startPhase = .8*pi;
-               residual = true;
-           elseif nargin < 4
-               startPhase = .8*pi;
-               residual = true; 
-           elseif nargin < 5
-               residual = true;
-           end
+        function buildMIs(obj)
 
             % First, segment neural data into cycles
             switch(obj.vars{1,2})
@@ -52,9 +34,9 @@ classdef calc_count_behav < mi_analysis
            
             % Next, segment behavioral data into cycles
             if nargin < 6
-                y = obj.objData.behaviorByCycles(behaviorSpec, desiredLength, startPhase, residual);
+                y = obj.objData.processBehavior();
             elseif nargin == 6
-                y = obj.objDatabehaviorByCycles(behaviorSpec, desiredLength, startPhase, residual, windowOfInterest);
+                y = obj.objData.processBehavior();
             end
 
             yGroups{1,1} = y;
@@ -63,7 +45,7 @@ classdef calc_count_behav < mi_analysis
             
             coeffs = {1};
 
-            buildMIs@mi_analysis(obj, {xGroups yGroups coeffs},verbose);          
+            buildMIs@mi_analysis(obj, {xGroups yGroups coeffs});          
             
             
         end

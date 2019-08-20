@@ -6,7 +6,7 @@ classdef calc_count_count_behav < mi_analysis
     end
     
     methods
-      function obj = calc_count_count_behav(objData,vars, verbose)
+      function obj = calc_count_count_behav(objData,vars)
             % vars- a 2 x 1 vector of two positive integers, specifying the neuron numbers
             
           if length(vars) ~= 2
@@ -20,36 +20,21 @@ classdef calc_count_count_behav < mi_analysis
           end
         end
         
-        function buildMIs(obj,behaviorSpec,desiredLength, startPhase,residual,windowOfInterest)
+        function buildMIs(obj)
             % So I propose that we use this method to prep the
             % count_behavior data for the MI core and go ahead and run MI
             % core from here. Then we can use the output of MI core to fill
             % in the MI, kvalue, and errors.
 
-           % Specify default parameters
-           if nargin < 2
-               behaviorSpec = 'phase';
-               desiredLength = 11;
-               startPhase = .8*pi;
-               residual = true; 
-           elseif nargin < 3
-               desiredLength = 11;
-               startPhase = .8*pi;
-               residual = true;
-           elseif nargin < 4
-               startPhase = .8*pi;
-               residual = true; 
-           elseif nargin < 5
-               residual = true;
-           end
+
 
             % First, segment neuron 1 data into breath cycles
             neuron = obj.vars(1);
-            n1 = obj.objData.getCount(neuron,verbose)';
+            n1 = obj.objData.getCount(neuron)';
             
             % Next segment neuron 2 data into cycles
     	    neuron = obj.vars(2);
-            n2 = obj.objData.getCount(neuron,verbose)';
+            n2 = obj.objData.getCount(neuron)';
             
             % Set up x data
             xGroups{1,1} = [n1 n2];
@@ -58,9 +43,9 @@ classdef calc_count_count_behav < mi_analysis
             % RC- we should change this to choose what we want to do with
             % the pressure. How do we do this? 
             if nargin < 6
-                y = obj.objData.behaviorByCycles(behaviorSpec, desiredLength, startPhase, residual);
+                y = obj.objData.processBehavior();
             elseif nargin == 6
-                y = obj.objDatabehaviorByCycles(behaviorSpec, desiredLength, startPhase, residual, windowOfInterest);
+                y = obj.objData.processBehavior();
             end
             
             % Set up y data
@@ -69,7 +54,7 @@ classdef calc_count_count_behav < mi_analysis
             % For this set the coeff will always be 1
             coeffs ={1};
             
-            buildMIs@mi_analysis(obj,{xGroups yGroups coeffs}, verbose);
+            buildMIs@mi_analysis(obj,{xGroups yGroups coeffs});
         end
     end
 end
