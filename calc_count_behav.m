@@ -22,12 +22,14 @@ classdef calc_count_behav < mi_analysis
         function buildMIs(obj)
 
             % First, segment neural data into cycles
-            switch(obj.vars{1,2})
+            switch(obj.vars{2})
                 case 'time'
                     neuron = obj.vars{1,1};
                     x = obj.objData.getCount(neuron);
                 case 'phase'
                     fprintf('Warning: this feature has not been added yet')
+                    neuron = obj.vars{1,1};
+                    x = obj.objData.getCount(neuron);
             end
             
             xGroups{1,1} = x;

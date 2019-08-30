@@ -44,7 +44,7 @@ classdef mi_data_pressure < mi_data_behavior
                     bad_cycle = find(isoutlier(cycle_len)==1);
                     if obj.verbose > 1; disp(['--> Dropping ' num2str(length(bad_cycle)) ' cycles!']); end
                     
-                    if isempty(bad_cycle) > 0
+                    if ~isempty(bad_cycle)
                         cycle_ixs(bad_cycle) = [];
                         cycle_len(bad_cycle) = [];
                     end
@@ -63,11 +63,17 @@ classdef mi_data_pressure < mi_data_behavior
                 % populate data structures
                 tmp_cycle_wavs = nan(length(cycle_ixs), max(cycle_len));   
                 
-                for j=1:length(cycle_ixs)-1
-                   wav_len = min(cycle_ixs(j+1) - cycle_ixs(j), size(cycle_wavs,2));
+                % matrix for current data file
+                for j=1:length(cycle_ixs)
+                    if j < length(cycle_ixs)
+                        wav_len = min(cycle_ixs(j+1) - cycle_ixs(j), size(tmp_cycle_wavs,2)); % pull waveform duration matching length of dataset
+                    else
+                        wav_len = min(size(pressure_wav,2) - cycle_ixs(j), size(tmp_cycle_wavs,2));
+                    end
                    tmp_cycle_wavs(j,1:wav_len) = pressure_wav(cycle_ixs(j):cycle_ixs(j)+wav_len-1);
                 end
                 
+                % add data to full dataset
                 obj.cycleTimes = horzcat(obj.cycleTimes, pressure_ts(cycle_ixs));
             
                 if size(cycle_wavs,2) > size(tmp_cycle_wavs,2)
@@ -79,7 +85,7 @@ classdef mi_data_pressure < mi_data_behavior
                 end
                 cycle_wavs(end+1:end+size(tmp_cycle_wavs,1),:) = tmp_cycle_wavs;
                 
-                disp('waiting...');
+                disp('');
             
             end
             
@@ -87,10 +93,17 @@ classdef mi_data_pressure < mi_data_behavior
             obj. cycleData = cycle_wavs;
         end
         
-        function get_feature(obj)
+        function r = get_feature(obj, format)
             %% Implemented to return different features of behavior cycles
             % i.e., raw data, PCA, residual, area
            
+            switch(format)
+                case('raw')
+                    % need to implement from RC's code
+                case('phase')
+                    % need to implement from RC's code                    
+            end
+            
         end       
    end    
 end
