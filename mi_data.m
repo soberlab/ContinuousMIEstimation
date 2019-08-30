@@ -7,17 +7,17 @@ classdef mi_data < handle
                 % 1 x N array of spike timing vectors- spike times in MS. 
                 % where N is the number of neurons recorded during this session. 
         n_timebase % either 'phase' or 'time'
-        behavior % N x n vector of the continuous pressure where N is the total cycles and n is the maximum 
+%         behavior % N x n vector of the continuous pressure where N is the total cycles and n is the maximum 
                  % number of samples per cycle
         obj_behav % behavioral data object
-        cycleTimes % {1 x 2} array with 1: 1 x N vector of onset times in seconds of each breath cycle
+%         cycleTimes % {1 x 2} array with 1: 1 x N vector of onset times in seconds of each breath cycle
                     % and 2: 1 x N vector of the peaks corresponding to the breathcycles
                     % where N is the total number of breath cycles 
         b_timebase % either 'phase' or 'time' 
                     % DEFAULT: 'time'
-        b_Length % An integer to indicate number of points to keep for each behavioral cycle
+        b_length % An integer to indicate number of points to keep for each behavioral cycle
                     % DEFAULT: 11
-        b_windowOfInterest % Either a phase window or a time window depending on the timebase.
+        b_windowOfInterest % Either a phase window or a time window in milliseconds regardless of timebase
                     % This value determines what window of the data we want
                     % to use for our calculation. 
                     % DEFAULT: pi or 100ms
@@ -27,7 +27,9 @@ classdef mi_data < handle
                    % DEFAULT: .8pi or 50ms
         b_dataTransform % either 'none, 'pca', or 'residual' - THIS CAN BE ADDED TO       
         bFs % sample frequency of pressure wave
-        nFs % sample frequency of neural data  
+        nFs % sample frequency of neural data 
+        
+        verbose % level of output for progress and troubleshooting/debugging
     end
 
     methods
@@ -41,13 +43,14 @@ classdef mi_data < handle
            % Set properties to empty arrays temporarily 
            obj.neurons = {};
            obj.n_timebase = {};
-           obj.behavior = {};
-           obj.cycleTimes = {};
+%            obj.behavior = {};
+%            obj.cycleTimes = {};
            obj.b_timebase = {};
-           obj.b_Length = {};
+           obj.b_length = {};
            obj.b_windowOfInterest = {};
            obj.b_startPhase = {};
            obj.b_dataTransform = {};
+           obj.verbose = 1;
        end
        
        function add_spikes(obj, spike_times, varargin)                 
@@ -93,17 +96,28 @@ classdef mi_data < handle
 
        end
        
-       function add_behavior(obj, behavior, cycleFreq, cutoffFreq, filterFreq, varargin)
+       function add_behavior(obj, behavior)
+           obj.obj_behav = behavior;
+           obj.set_behavior();
+       end
+       
+%        function set_behavior(obj, behavior, cycleFreq, cutoffFreq, filterFreq, varargin)
+        function set_behavior(obj, varargin)
             p = inputParser;
-            if isempty(obj.behavior)
-               % Behavior input is required if it has not been defined yet.
-               p.addRequired('behavior');
-            elseif ~isempty(obj.behavior)
-               % If the behavior is already specified for the object, then
-               % it defaults to the pre-set value, and the input is not
-               % necessary.
-               p.addOptional('behavior',obj.behavior);
-            end
+            
+            % BC 20190821: add behavior object and overwrite existing
+%             p.addRequired('behavior');
+            
+            
+%             if isempty(obj.behavior)
+%                % Behavior input is required if it has not been defined yet.
+%                p.addRequired('behavior');
+%             elseif ~isempty(obj.behavior)
+%                % If the behavior is already specified for the object, then
+%                % it defaults to the pre-set value, and the input is not
+%                % necessary.
+%                p.addOptional('behavior',obj.behavior);
+%             end
 
             % Convert behavior to cycles if its not already in cycles
             % --> BC 20190820: this is taken care of by pressure cycle
@@ -147,102 +161,147 @@ classdef mi_data < handle
 %                 % Store behavior
 %                 obj.behavior = behaviorCycles;
 %             end
-            obj.obj_behav = behavior;
+%             obj.obj_behav = behavior;
 
             % Set behavioral property defaults
+           
+            
             default_b_timebase = 'phase';
             validate_b_timebase = @(x) assert(ismember(x,{'phase','time'}), 'timebase must be either phase or time');
-            default_b_Length = 11;
-            validate_b_Length = @(x) assert(isinteger(x),'length must be an integer value');
+            p.addParameter('timebase', default_b_timebase, validate_b_timebase);
+            p.KeepUnmatched = true; % allows for arguments that are not yet added to parser
+            p.parse(varargin{:});
+            
+            if isempty(obj.b_timebase)
+                timebase = p.Results.timebase;
+            else
+                if sum(strcmp(varargin, 'timebase')) == 1
+                    timebase = p.Results.timebase;
+                else
+                    timebase = obj.b_timebase;
+                end
+            end
+            
+            default_b_length = 11;
+            validate_b_length = @(x) assert(isnumeric(x) && x >= 0 && floor(x) == x,'length must be an integer value');
+            p.addParameter('length', default_b_length, validate_b_length);
+            
             default_b_dataTransform = 'residual'; 
             validate_b_dataTransform = @(x) assert(ismember(x,{'none','residual','pca'}), 'dataTransform must be none, residual, or pca');
+            p.addParameter('dataTransform', default_b_dataTransform, validate_b_dataTransform);
 
-            % Set behavior timebase value
-            if isempty(obj.b_timebase)
-                % set n_timebase to default or inputed value
-                p.addParameter('timebase',default_b_timebase, validate_b_timebase);
-            elseif ~isempty(obj.b_timebase)
-                % overwrite current n_timebase setting only if the value is
-                % inputted
-                p.addParameter('timebase',obj.b_timebase, validate_b_timebase);
-            end
-            p.parse(behavior,varargin{:});
-            % Set behavior timebase property
-            obj.b_timebase = p.Results.timebase;
+%             % Set behavior timebase value
+%             if isempty(obj.b_timebase)
+%                 % set n_timebase to default or inputed value
+%                 p.addParameter('timebase',default_b_timebase, validate_b_timebase);
+%             elseif ~isempty(obj.b_timebase)
+%                 % overwrite current n_timebase setting only if the value is
+%                 % inputted
+%                 p.addParameter('timebase',obj.b_timebase, validate_b_timebase);
+%             end
+%             p.parse(varargin{:});
+% %             p.parse(behavior,varargin{:});
+%             % Set behavior timebase property
+%             obj.b_timebase = p.Results.timebase;
 
-            % Set behavior length 
-            if isempty(obj.b_Length)
-                % set b_Length to default or inputed value
-                p.addParameter('Length',default_b_Length, validate_b_Length);
-            elseif ~isempty(obj.b_Length)
-                % overwrite current b_Length setting only if the value is
-                % inputted
-                p.addParameter('Length',obj.b_Length, validate_b_Length);
-            end
+%             % Set behavior length 
+%             if isempty(obj.b_length)
+%                 % set b_length to default or inputed value
+%                 p.addParameter('Length',default_b_length, validate_b_length);
+%             elseif ~isempty(obj.b_length)
+%                 % overwrite current b_length setting only if the value is
+%                 % inputted
+%                 p.addParameter('Length',obj.b_length, validate_b_length);
+%             end
 
 
-            % Set behavior Length property
-            p.parse(behavior,varargin{:});
-            obj.b_Length = p.Results.Length;
+%             % Set behavior Length property
+% %             p.parse(behavior,varargin{:});
+%             p.parse(varargin{:});
+%             obj.b_length = p.Results.Length;
 
             % Set behavior startPhase 
             % Adjust startPhase default and validation depending on timebase property
-            if obj.b_timebase == 'phase'
+%             if strcmp(obj.b_timebase, 'phase')
+            if strcmp(timebase, 'phase')
                 default_b_startPhase = .8*pi;
                 validate_b_startPhase = @(x) assert(0 <= x && x < 2*pi,'startPhase units must be in radians to match timebase');
-            elseif obj.b_timebase == 'time'
+            elseif strcmp(timebase, 'time')
                 default_b_startPhase = 50;
-                validate_b_startPhase = @(x) assert(isinteger(x) && x >= 0,'startPhase units must be a positive integer in milliseconds to match timebase');
+                validate_b_startPhase = @(x) assert(isnumeric(x) && x >= 0 && floor(x) == x,'startPhase units must be a positive integer in milliseconds to match timebase');
+                % Can't use isinteger() because varargin automatically
+                % casts argument as float, will deal with at end of
+                % function during value assignments
             end
-            % Set behavior startPhase
-            if isempty(obj.b_startPhase)
-                % set n_startPhase to default or inputed value
-                p.addParameter('startPhase',default_b_startPhase, validate_b_startPhase);
-            elseif ~isempty(obj.b_startPhase)
-                % overwrite current b_startPhase setting only if the value is
-                % inputted
-                p.addParameter('startPhase',obj.b_startPhase, validate_b_startPhase);
-            end
+            p.addParameter('startPhase', default_b_startPhase, validate_b_startPhase);
+            
+%             % Set behavior startPhase
+%             if isempty(obj.b_startPhase)
+%                 % set n_startPhase to default or inputed value
+%                 p.addParameter('startPhase',default_b_startPhase, validate_b_startPhase);
+%             elseif ~isempty(obj.b_startPhase)
+%                 % overwrite current b_startPhase setting only if the value is
+%                 % inputted
+%                 p.addParameter('startPhase',obj.b_startPhase, validate_b_startPhase);
+%             end
             % Set behavior startPhase property
-            p.parse(behavior,varargin{:});
-            obj.b_startPhase = p.Results.startPhase;
+%             p.parse(behavior,varargin{:});
+%             p.parse(varargin{:});
+%             obj.b_startPhase = p.Results.startPhase;
 
             % Set behavior windowOfInterest
 
             % Adjust startPhase default and validation depending on timebase property
-            if obj.b_timebase == 'phase'
+            if strcmp(timebase, 'phase')
                 default_b_windowOfInterest = pi;
-                validate_b_windowOfInterest = @(x) assert((obj.b_startPhase + x) <= 2*pi,'startPhase plus windowOfInterst must not exceed 2pi');
-            elseif obj.b_timebase == 'time'
+                validate_b_windowOfInterest = @(x) assert(isnumeric(x),'startPhase must be numerical'); % check for valid time window at end of function
+            elseif strcmp(timebase, 'time')
                 default_b_windowOfInterest = 100;
-                validate_b_windowOfInterest = @(x) assert(isinteger(x) && x >= 0,'windowOfInterest units must be a positive integer in milliseconds to match timebase');
+                validate_b_windowOfInterest = @(x) assert(isnumeric(x) && x >= 0,'windowOfInterest units must be a positive integer in milliseconds to match timebase');
             end
-            % Set behavior windowOfInterest
-            if isempty(obj.b_windowOfInterest)
-                % set b_windowOfInterest to default or inputed value
-                p.addParameter('windowOfInterest',default_b_windowOfInterest, validate_b_windowOfInterest);
-            elseif ~isempty(obj.b_windowOfInterest)
-                % overwrite current b_windowOfInterest setting only if the value is
-                % inputted
-                p.addParameter('windowOfInterest',obj.b_windowOfInterest, validate_b_windowOfInterest);
-            end
-            % Set behavior startPhase property
-            p.parse(behavior,varargin{:});
+            p.addParameter('windowOfInterest', default_b_windowOfInterest, validate_b_windowOfInterest);
+%             % Set behavior windowOfInterest
+%             if isempty(obj.b_windowOfInterest)
+%                 % set b_windowOfInterest to default or inputed value
+%                 p.addParameter('windowOfInterest',default_b_windowOfInterest, validate_b_windowOfInterest);
+%             elseif ~isempty(obj.b_windowOfInterest)
+%                 % overwrite current b_windowOfInterest setting only if the value is
+%                 % inputted
+%                 p.addParameter('windowOfInterest',obj.b_windowOfInterest, validate_b_windowOfInterest);
+%             end
+%             % Set behavior startPhase property
+% %             p.parse(behavior,varargin{:});
+%             p.parse(varargin{:});
+%             obj.b_windowOfInterest = p.Results.windowOfInterest;
+
+%             % Set behavior dataTransform
+%             if isempty(obj.b_dataTransform)
+%                 % set n_dataTransform to default or inputed value
+%                 p.addParameter('dataTransform',default_b_dataTransform, validate_b_dataTransform);
+%             elseif ~isempty(obj.b_dataTransform)
+%                 % overwrite current b_dataTransform setting only if the value is
+%                 % inputted
+%                 p.addParameter('dataTransform',obj.b_dataTransform, validate_b_dataTransform);
+%             end
+%             % Set behavior dataTransform property
+% %             p.parse(behavior,varargin{:});
+%             p.parse(varargin{:});
+%             obj.b_dataTransform = p.Results.dataTransform;
+
+            p.parse(varargin{:});
+
+            % NEED TO CHECK FOR VALIDITIY OF PRESSURE WAVE WITHIN SAME
+            % CYCLE OF SPIKES
+%             if startPhase + windowOfInterest > 2*pi
+%                 warning('Invalid limits: windowOfInterest plus startPhase must be less than 2*pi');
+%             end
+            
+            obj.b_timebase = p.Results.timebase;
+            obj.b_length = p.Results.length;            
+            obj.b_startPhase = double(p.Results.startPhase);
             obj.b_windowOfInterest = p.Results.windowOfInterest;
-
-            % Set behavior dataTransform
-            if isempty(obj.b_dataTransform)
-                % set n_dataTransform to default or inputed value
-                p.addParameter('dataTransform',default_b_dataTransform, validate_b_dataTransform);
-            elseif ~isempty(obj.b_dataTransform)
-                % overwrite current b_dataTransform setting only if the value is
-                % inputted
-                p.addParameter('dataTransform',obj.b_dataTransform, validate_b_dataTransform);
-            end
-            % Set behavior dataTransform property
-            p.parse(behavior,varargin{:});
             obj.b_dataTransform = p.Results.dataTransform;
-
+            
        end
        
 %        function [Times] = make_cycleTimes(obj, behavior, cycleFreq, cutoffFreq)
@@ -380,12 +439,23 @@ classdef mi_data < handle
        
        
         function r = processBehavior(obj)
+            
+            behavData = obj.obj_behav.cycleData;
+            
+%             if obj.verbose > 2
+%                 figure()
+%                 h_avgBehav = plot(nanmean(behavData), 'k-', 'LineWidth', 3);
+%                 hold on;
+%             end
+            
+            
             switch(obj.b_dataTransform)
             case('pca')
                 switch(obj.b_timebase)
                 case('phase')
                     % Find the lengths of the cycles in samples
-                    cycleLengths_samples = sum(~isnan(obj.behavior),2);
+%                     cycleLengths_samples = sum(~isnan(obj.behavior),2);
+                    cycleLengths_samples = sum(~isnan(behavData),2);
 
                     % Find the sample associated with the start phase for each
                     % cycle
@@ -406,7 +476,8 @@ classdef mi_data < handle
                    for cycle_ix = 1:nCycles
                        % Document all of the data points for the window of
                        % interest
-                       cycle_data = obj.behavior(cycle_ix,start_samples(cycle_ix):stop_samples(cycle_ix));
+%                        cycle_data = obj.behavior(cycle_ix,start_samples(cycle_ix):stop_samples(cycle_ix));
+                       cycle_data = behavData(cycle_ix,start_samples(cycle_ix):stop_samples(cycle_ix));
                        % We resample the cyclic data to make the data have
                        % uniform length --> I am arbitrarily picking 1000
                        % data points. 
@@ -416,7 +487,8 @@ classdef mi_data < handle
 
                 case('time')
                 % Find the lengths of the cycles in samples
-                    cycleLengths_samples = sum(~isnan(obj.behavior),2);
+%                     cycleLengths_samples = sum(~isnan(obj.behavior),2);
+                    cycleLengths_samples = sum(~isnan(behavData),2);
 
                     % Find the sample associated with the start time for each
                     % cycle
@@ -441,93 +513,109 @@ classdef mi_data < handle
                    for cycle_ix = 1:nCycles
                        % Document all of the data points for the window of
                        % interest
-                       cycle_data = obj.behavior(cycle_ix,start_samples:stop_samples); 
+%                        cycle_data = obj.behavior(cycle_ix,start_samples:stop_samples); 
+                       cycle_data = behavData(cycle_ix,start_samples:stop_samples); 
                        cycle_behavior(cycle_ix, 1:windowOfInterest_samples+1) = cycle_data;
                    end
                 end
                 % Find the PCs of the window of interest cycle data
                 [~,score,~] = pca(cycle_behavior);
-                cycle_dataPCs = score(:,1:obj.b_Length);
+                cycle_dataPCs = score(:,1:obj.b_length);
                 r = cycle_dataPCs;
                 
-            otherwise
-                switch(obj.b_timebase)
-                case('phase')
-                    % Find the lengths of the cycles in samples
-                    cycleLengths_samples = sum(~isnan(obj.behavior),2);
+                otherwise % 'none' or 'residual'
+                    switch(obj.b_timebase)
+                        case('phase')
+                            % Find the lengths of the cycles in samples
+        %                     cycleLengths_samples = sum(~isnan(obj.behavior),2);
+                            cycleLengths_samples = sum(~isnan(behavData),2);
 
-                    % Find the sample associated with the start phase for each
-                    % cycle
-                    start_samples = ceil(obj.b_startPhase.*(cycleLengths_samples./(2*pi)));
+                            % Find the sample associated with the start phase for each
+                            % cycle
+                            start_samples = ceil(obj.b_startPhase.*(cycleLengths_samples./(2*pi)));
 
-                    % Find the number of samples that encompases the window of
-                    % interest for the cycles. 
-                    windowOfInterest_samples = ceil(obj.b_windowOfInterest.*(cycleLengths_samples./(2*pi)));
+                            % Find the number of samples that encompases the window of
+                            % interest for the cycles. 
+                            windowOfInterest_samples = ceil(obj.b_windowOfInterest.*(cycleLengths_samples./(2*pi)));
 
-                    % Find the stop sample of the window of interest for each
-                    % cycle
-                    stop_samples = start_samples + windowOfInterest_samples;
+                            % Find the stop sample of the window of interest for each
+                            % cycle
+                            stop_samples = start_samples + windowOfInterest_samples;
 
-                   % Set up empty matrix to store pressure data.
-                   nCycles = length(cycleLengths_samples);
-                   cycle_behavior = nan(nCycles, obj.b_Length);
+                           % Set up empty matrix to store pressure data.
+                           nCycles = length(cycleLengths_samples);
+                           cycle_behavior = nan(nCycles, obj.b_length);
+                           
+                           for cycle_ix = 1:nCycles
+                               % Document all of the data points for the window of
+                               % interest
+        %                        cycle_data = obj.behavior(cycle_ix,start_samples(cycle_ix):stop_samples(cycle_ix));
+                               cycle_data = behavData(cycle_ix,start_samples(cycle_ix):stop_samples(cycle_ix));
 
-                   for cycle_ix = 1:nCycles
-                       % Document all of the data points for the window of
-                       % interest
-                       cycle_data = obj.behavior(cycle_ix,start_samples(cycle_ix):stop_samples(cycle_ix));
-                       % Resample to get only the desired number of points
-                       resampled_cycle_data = resample(cycle_data,obj.b_Length,length(cycle_data));
-                       cycle_behavior(cycle_ix, 1:obj.b_Length) = resampled_cycle_data;   
-                   end
+%                                if obj.verbose > 2; plot(start_samples(cycle_ix):stop_samples(cycle_ix), cycle_data); end
+                               
+                               % Resample to get only the desired number of points
+                               resampled_cycle_data = resample(cycle_data,obj.b_length,length(cycle_data));
+                               cycle_behavior(cycle_ix, 1:obj.b_length) = resampled_cycle_data;   
+                           end
 
-                case('time')
-                % Find the lengths of the cycles in samples
-                    cycleLengths_samples = sum(~isnan(obj.behavior),2);
+                        case('time')
+                        % Find the lengths of the cycles in samples
+        %                     cycleLengths_samples = sum(~isnan(obj.behavior),2);
+                            cycleLengths_samples = sum(~isnan(behavData),2);
 
-                    % Find the sample associated with the start time for each
-                    % cycle
-                    % Convert startPhase from ms to seconds
-                    startTime = obj.b_startPhase/1000;
-                    start_samples = ceil(startTime*obj.bFs);
+                            % Find the sample associated with the start time for each
+                            % cycle
+                            % Convert startPhase from ms to seconds
+                            startTime = obj.b_startPhase/1000;
+                            start_samples = ceil(startTime*obj.bFs);
 
-                    % Find the number of samples that encompases the window of
-                    % interest for the cycles. 
-                    % Convert windowOFInterest from ms to seconds
-                    windowOfInterest_seconds = obj.b_windowOfInterest/1000;
-                    windowOfInterest_samples = ceil(windowOfInterest_seconds*obj.bFs);
+                            % Find the number of samples that encompases the window of
+                            % interest for the cycles. 
+                            % Convert windowOFInterest from ms to seconds
+                            windowOfInterest_seconds = obj.b_windowOfInterest/1000;
+                            windowOfInterest_samples = ceil(windowOfInterest_seconds*obj.bFs);
 
-                    % Find the stop sample of the window of interest for each
-                    % cycle
-                    stop_samples = start_samples + windowOfInterest_samples;
+                            % Find the stop sample of the window of interest for each
+                            % cycle
+                            stop_samples = start_samples + windowOfInterest_samples;
 
-                   % Set up empty matrix to store pressure data.
-                   nCycles = length(cycleLengths_samples);
-                   cycle_behavior = nan(nCycles, obj.b_Length);
+                           % Set up empty matrix to store pressure data.
+                           nCycles = length(cycleLengths_samples);
+                           cycle_behavior = nan(nCycles, obj.b_length);
 
-                   for cycle_ix = 1:nCycles
-                       % Document all of the data points for the window of
-                       % interest
-                       cycle_data = obj.behavior(cycle_ix,start_samples:stop_samples);
-                       % Resample to get only the desired number of points
-                       resampled_cycle_data = resample(cycle_data,obj.b_Length,length(cycle_data));
-                       cycle_behavior(cycle_ix, 1:obj.b_Length) = resampled_cycle_data;   
-                   end
-                end
+                           figure();
+                           
+                           for cycle_ix = 1:nCycles
+                               % Document all of the data points for the window of
+                               % interest
+        %                        cycle_data = obj.behavior(cycle_ix,start_samples:stop_samples);
+                               cycle_data = behavData(cycle_ix,start_samples:stop_samples);
+                               % Resample to get only the desired number of points
+                               
+                               plot(behavData(cycle_ix,:));
+                               hold on;
+                               plot(start_samples:stop_samples, cycle_data);
+                               
+                               resampled_cycle_data = resample(cycle_data,obj.b_length,length(cycle_data));
+                               cycle_behavior(cycle_ix, 1:obj.b_length) = resampled_cycle_data;   
+                           end
+                    end
 
-                % Transform the behavioral data
-                switch(obj.b_dataTransform)
-                case('none')
-                    r = cycle_behavior;
-                case('residual')
-                    avg_cycle = mean(cycle_behavior,1);
-                    avg_cycleMatrix = repmat(avg_cycle, length(cycle_behavior),1);
-                    cycle_residuals = cycle_behavior - avg_cycleMatrix;
-                    r = cycle_residuals;
+                    % Transform the behavioral data
+                    switch(obj.b_dataTransform)
+                        case('none')
+                            r = cycle_behavior;
+                        case('residual')
+                            avg_cycle = mean(cycle_behavior,1);
+                            avg_cycleMatrix = repmat(avg_cycle, length(cycle_behavior),1);
+                            cycle_residuals = cycle_behavior - avg_cycleMatrix;
+                            r = cycle_residuals;
 
-                end
+                    end
             end
 
+%             if obj.verbose > 2; uistack(h_avgBehav, 'top'); end
 
         end
 
