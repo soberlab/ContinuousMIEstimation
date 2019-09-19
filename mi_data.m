@@ -87,7 +87,7 @@ classdef mi_data < handle
                % is an input. 
                p.addParameter('timebase',obj.n_timebase,validate_n_timebase);
            end
-           p.parse(spike_times);
+           p.parse(timebase);
            obj.n_timebase = p.Results.timebase;
 
        end
