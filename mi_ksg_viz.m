@@ -6,7 +6,7 @@ classdef mi_ksg_viz < handle
         function plot_generic()
             % make generic plot of two variables
         end
-        function r_plot = plot_data_fraction(obj, obj_core, k, f)
+        function r_plot = plot_data_fraction(obj, obj_core, k, f, ax)
             % make data fraction plot
             if nargin == 3
                 fig = figure();
@@ -14,7 +14,6 @@ classdef mi_ksg_viz < handle
                 fig = figure(f);
             end
             
-            ax = subplot(1,1,1);
             
             bool_ixs = cell2mat(obj_core.mi_data(:,4)) == k;
             xs = cell2mat(obj_core.mi_data(bool_ixs,3));
@@ -24,12 +23,12 @@ classdef mi_ksg_viz < handle
             
             xlabel('Data Fraction (1/N)');
             ylabel('Mutual Information');
-            title({'Kraskov-Stoegbauer-Grassberger' ['Data Fraction for k = ' num2str(k)]});
+            title({[ 'k = ' num2str(k)]});
             
             xlim([min(xs)*0.8 max(xs)*1.1]);
             
         end
-        function r_plot = plot_k_dependence(obj, obj_core, f)
+        function r_plot = plot_k_dependence(obj, obj_core, f, ax)
             % make k-dependence plot
             if nargin == 2
                 fig = figure();
@@ -37,7 +36,6 @@ classdef mi_ksg_viz < handle
                 fig = figure(f);
             end
             
-            ax = subplot(1,1,1);
             
             ks = obj_core.k_values;
             ys = zeros(1, length(ks));
