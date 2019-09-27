@@ -21,8 +21,8 @@ classdef mi_ksg_viz < handle
             err = cell2mat(obj_core.mi_data(bool_ixs,2));
             r_plot = errorbar(ax, xs, ys, err, '-b', 'Marker', '.', 'MarkerSize', 15);
             
-            xlabel('Data Fraction (1/N)');
-            ylabel('Mutual Information');
+            %xlabel('Data Fraction (1/N)');
+            %ylabel('Mutual Information');
             title({[ 'k = ' num2str(k)]});
             
             xlim([min(xs)*0.8 max(xs)*1.1]);
@@ -47,8 +47,8 @@ classdef mi_ksg_viz < handle
             end
             r_plot = errorbar(ks, ys, err, '-b', 'Marker', '.', 'Markersize', 15);
             
-            xlabel('k-value');
-            ylabel('Mutual Information');
+            %xlabel('k-value');
+            %ylabel('Mutual Information');
             title({'Kraskov-Stoegbauer-Grassberger' 'k-dependence'});
             
             xlim([min(ks)*0.8 max(ks)*1.1]);
