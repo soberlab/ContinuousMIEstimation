@@ -11,8 +11,8 @@ classdef calc_timing_behav < mi_analysis
        function obj = calc_timing_behav(objData,vars)
             % vars - 2 x 1 vector specifying neuron numbers
 
-            if length(vars) ~= 2
-                error('Expected two variables specified');
+            if length(vars) ~= 1
+                error('Expected one variables specified');
             end
 
             obj@mi_analysis(objData, vars);

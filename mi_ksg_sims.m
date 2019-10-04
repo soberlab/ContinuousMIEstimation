@@ -92,7 +92,13 @@ classdef mi_ksg_sims < handle
                 parfor i=1:size(sim_set,1) % run simulations in parallel
                 % for i = 1:10
                     tmp_sim_set = sim_set(i,:); % needed for parfor
-                    MI = MIxnyn(tmp_sim_set{1}, tmp_sim_set{2}, tmp_sim_set{3}); % run MI calculation
+                    if length(tmp_sim_set{1}) < 5
+                        MI = NaN;
+                    elseif length(tmp_sim_set{1}) < tmp_sim_set{3}
+                        MI = NaN;
+                    else
+                        MI = MIxnyn(tmp_sim_set{1}, tmp_sim_set{2}, tmp_sim_set{3}); % run MI calculation
+                    end
                     sim_data(i,:) = {MI/log(2) tmp_sim_set{3} tmp_sim_set{4} tmp_sim_set{5}}; % add results with params/index to data set
                 end
             else
@@ -102,6 +108,8 @@ classdef mi_ksg_sims < handle
                     if (max(size(tmp_sim_set{1})) > tmp_sim_set{3}+1) | (max(size(tmp_sim_set{2})) > tmp_sim_set{3}+1)
                         MI = MIxnyn(tmp_sim_set{1}, tmp_sim_set{2}, tmp_sim_set{3}); % run MI calculation
                         sim_data(i,:) = {MI/log(2) tmp_sim_set{3} tmp_sim_set{4} tmp_sim_set{5}}; % add results with params/index to data set
+                    elseif max(size(tmp_sim_set{1})) < 5
+                        sim_data(i,:) = {nan tmp_sim_set{3} tmp_sim_set{4} tmp_sim_set{5}};
                     else
                         sim_data(i,:) = {nan tmp_sim_set{3} tmp_sim_set{4} tmp_sim_set{5}};
                     end
