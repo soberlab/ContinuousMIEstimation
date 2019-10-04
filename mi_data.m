@@ -27,6 +27,7 @@ classdef mi_data < handle
         b_dataTransform % either 'none, 'pca', or 'residual' - THIS CAN BE ADDED TO       
         bFs % sample frequency of pressure wave
         nFs % sample frequency of neural data  
+        reparamData % 0 if we don't want to reparameterize our data to have a Gaussian distribution and 1 if we do. 
     end
 
     methods
@@ -36,6 +37,7 @@ classdef mi_data < handle
            if nargin > 0
                obj.bFs = pFs;
                obj.nFs = nFs;
+               obj.reparamData = 0;
            end
            % Set properties to empty arrays temporarily 
            obj.neurons = {};
@@ -53,7 +55,9 @@ classdef mi_data < handle
            % BC-20190123: Can add an index to neurons for explicit tracking
            % across classes?
            % RC: 20190517: Not sure what this would look like...
-
+           % RC: This function is not working well for now. I will need to
+           % make some MAJOR edits later. BUT FOR NOW, We can just always
+           % include spike-times as an input 
            % Set default optional parameter value
            default_n_timebase = 'time';
            validate_n_timebase = @(x) assert(ismember(x,{'time','phase'}),'timebase must be either phase or time');
@@ -63,31 +67,47 @@ classdef mi_data < handle
            % SpikeTimes are required if they haven't been specified
            if isempty(obj.neurons)
                p.addRequired('spike_times');
-               p.parse(spike_times);
-               
+                          % Determine n_timebase has been set
+               if isempty(obj.n_timebase)
+                   % If n_timebase has not been defined yet, set it to the
+                   % default or specified value
+                   p.addParameter('timebase',default_n_timebase,validate_n_timebase)
+                   p.parse(spike_times, varargin{:});
+               elseif ~isempty(obj.n_timebase)
+                   % If n_timebase has been defined, the default is the
+                   % pre-assigned value, and it should only change if timebase
+                   % is an input. 
+                   default_n_timebase = obj.n_timebase;
+                   p.addParameter('timebase', default_n_timebase,validate_n_timebase);
+                   p.parse(spike_times, varargin{:});
+               end
            elseif ~isempty(obj.neurons)
                p.addOptional('spike_times',[]);
-               p.parse(spike_times);
+               % Determine n_timebase has been set
+               if isempty(obj.n_timebase)
+                   % If n_timebase has not been defined yet, set it to the
+                   % default or specified value
+                   p.addParameter('timebase',default_n_timebase,validate_n_timebase)
+                   p.parse(spike_times, varargin{:})
+               elseif ~isempty(obj.n_timebase)
+                   % If n_timebase has been defined, the default is the
+                   % pre-assigned value, and it should only change if timebase
+                   % is an input. 
+                   p.addParameter('timebase',obj.n_timebase,validate_n_timebase);
+                   p.parse(spike_times, varargin{:})
+                  
+               end
+             
            end
-
+           spike_times = p.Results.spike_times;
+           
            % Add a set of spike times to object unless the spikes weren't
            % specified
-           if ~isempty(spike_times)
+           if ~isempty(spike_times)               
                obj.neurons{end+1} = spike_times;
            end
-           
-           % Determine n_timebase has been set
-           if isempty(obj.n_timebase)
-               % If n_timebase has not been defined yet, set it to the
-               % default or specified value
-               p.addParameter('timebase',default_n_timebase,validate_n_timebase)
-           elseif ~isempty(obj.n_timebase)
-               % If n_timebase has been defined, the default is the
-               % pre-assigned value, and it should only change if timebase
-               % is an input. 
-               p.addParameter('timebase',obj.n_timebase,validate_n_timebase);
-           end
-           p.parse(timebase);
+
+
            obj.n_timebase = p.Results.timebase;
 
        end
@@ -521,7 +541,9 @@ classdef mi_data < handle
 
 
         end
-
+        function r = reparameterizeData(obj,data)
+            r = reparameterize_data(data);
+        end
            
    
     end

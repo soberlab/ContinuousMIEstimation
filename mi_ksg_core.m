@@ -9,7 +9,7 @@ classdef mi_ksg_core < handle
         x % matrix of x data
         y % matrix of y data
         k_values % array of k-values
-        mi_data % MI value, error estimate, data fraction
+        mi_data % MI value, error estimate, data fraction, k_value
         opt_k % optimized k value; if -1, only runs MI calculation without any error estimate
         data_fracs = 10 % number of data fractions
         
@@ -124,15 +124,29 @@ classdef mi_ksg_core < handle
             % calculate estimated error
             listSplitSizes = cell2mat(obj.mi_data(data_ixs,3));
             MIs = cell2mat(obj.mi_data(data_ixs,1));
-            listVariances = cell2mat(obj.mi_data(data_ixs,2));
+            listStddevs = cell2mat(obj.mi_data(data_ixs,2));
+            listVariances = listStddevs.^2;
             listVariances = listVariances(2:end);
             
             k = listSplitSizes(2:end);
+% ----------------OLD ERROR CODE------------------------------------------            
             variancePredicted = sum((k-1)./k.*listVariances)./sum((k-1));
 
             % return MI value and error estimation
+           r.err = variancePredicted^.5;
+%-------------------------------------------------------------------------
+
+%---------------THIS IS WRONG. ---------------------------
+%             % Get the total size of the data. 
+%             N = size(obj.x,2);
+%             variancePredicted = sum((k-1)./k.*listVariances)./sum((k-1)); %The estimated variance of the mutual information at the full N
+%             Sml=variancePredicted*N;
+%             varS = 2*Sml^2/sum((k-1)); %Estimated variance of the variance of the estimate of the mutual information at full N
+%             stdvar = sqrt(varS/N^2); %the error bars on our estimate of the variance
+%             r.err = stdvar;
+%-------------------------------------------------------------------------
             r.mi = MIs(1);
-            r.err = variancePredicted^.5;
+
         end
         
         function r = find_k_value(obj)
