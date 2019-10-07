@@ -131,6 +131,11 @@ classdef mi_ksg_core < handle
             k = listSplitSizes(2:end);
 % ----------------OLD ERROR CODE------------------------------------------            
             variancePredicted = sum((k-1)./k.*listVariances)./sum((k-1));
+            
+            N = size(obj.x,2);
+            Sml=variancePredicted*N;
+            varS = 2*Sml^2/sum((k-1)); %Estimated variance of the variance of the estimate of the mutual information at full N
+            stdvar = sqrt(varS/N^2); %the error bars on our estimate of the variance
 
             % return MI value and error estimation
            r.err = variancePredicted^.5;

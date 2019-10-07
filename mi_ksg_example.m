@@ -145,19 +145,19 @@ calcMIs(MI_tc);
 
 % RC:
 clear
-load('bl21lb21_171218_dtvw-0002.mat')
+load('D:\EMG_Data\chung\for_analysis\bl21lb21_20171218\bl21lb21_trial1_ch1_ch16\bl21lb21_171218_nmsort_spikedata-CH1.mat')
 ts1 = spikedata.ts(:,1)*1000;
 
-load('bl21lb21_171218_dtvw-0003.mat')
+load('D:\EMG_Data\chung\for_analysis\bl21lb21_20171218\bl21lb21_trial1_ch1_ch16\bl21lb21_171218_nmsort_spikedata-CH5.mat')
 ts2 = spikedata.ts(:,1)*1000;
 
-load('bl21lb21_171218_dtvw-pressure.mat')
+load('D:\EMG_Data\chung\for_analysis\bl21lb21_20171218\bl21lb21_trial1_ch1_ch16\bl21lb21_171218_dtvw-pressure.mat')
 ptimes = spikedata.ts(:,1)*1000;
 
 clearvars -except ts1 ts2 ptimes
 
 % Load Pressure data- for area under the curve
-load('bl21lb21_171218_dtvw-pressure.mat')
+% load('bl21lb21_171218_dtvw-pressure.mat')
 pressure = spikedata.ts(1:end,5);
 % Load Pressure data - for raw pressure (smaller files)
 % fid = fopen('bl21lb21_171218_130932_180s_CH1-2-3-4-5-6-7-8_Fs30000_Filt300-7500.bin','r');
