@@ -70,7 +70,7 @@ classdef mi_ksg_sims < handle
             obj.mi_core_arr(idx) = {};
         end
         
-        function run_sims(obj)
+        function run_sims(obj, append)
             % run simulations in parallel or in serial
             
             if obj.verbose > 0; disp('Running MI_KSG_sim_manager simulations...'); end
@@ -80,7 +80,7 @@ classdef mi_ksg_sims < handle
             sim_set = cell(0,5);
             for i=1:size(obj.mi_core_arr,1)
                 [tmp_core, tmp_key] = obj.mi_core_arr{i,:};
-                tmp_set = get_core_dataset(tmp_core); % get MI data and parameters from core obj
+                tmp_set = get_core_dataset(tmp_core, append); % get MI data and parameters from core obj
                 tmp_set(:,5) = {tmp_key}; % add core obj identifier for each data/param set
                 sim_set = cat(1, sim_set, tmp_set); % add data/param set with identifiers to sim set
             end
@@ -90,8 +90,15 @@ classdef mi_ksg_sims < handle
             sim_data = cell(size(sim_set,1),4); % pre-allocate memory
             if obj.par_mode > 0
                 parfor i=1:size(sim_set,1) % run simulations in parallel
+                % for i = 1:10
                     tmp_sim_set = sim_set(i,:); % needed for parfor
-                    MI = MIxnyn(tmp_sim_set{1}, tmp_sim_set{2}, tmp_sim_set{3}); % run MI calculation
+                    if length(tmp_sim_set{1}) < 5
+                        MI = NaN;
+                    elseif length(tmp_sim_set{1}) < tmp_sim_set{3}
+                        MI = NaN;
+                    else
+                        MI = MIxnyn(tmp_sim_set{1}, tmp_sim_set{2}, tmp_sim_set{3}); % run MI calculation
+                    end
                     sim_data(i,:) = {MI/log(2) tmp_sim_set{3} tmp_sim_set{4} tmp_sim_set{5}}; % add results with params/index to data set
                 end
             else
@@ -101,6 +108,8 @@ classdef mi_ksg_sims < handle
                     if (max(size(tmp_sim_set{1})) > tmp_sim_set{3}+1) | (max(size(tmp_sim_set{2})) > tmp_sim_set{3}+1)
                         MI = MIxnyn(tmp_sim_set{1}, tmp_sim_set{2}, tmp_sim_set{3}); % run MI calculation
                         sim_data(i,:) = {MI/log(2) tmp_sim_set{3} tmp_sim_set{4} tmp_sim_set{5}}; % add results with params/index to data set
+                    elseif max(size(tmp_sim_set{1})) < 5
+                        sim_data(i,:) = {nan tmp_sim_set{3} tmp_sim_set{4} tmp_sim_set{5}};
                     else
                         sim_data(i,:) = {nan tmp_sim_set{3} tmp_sim_set{4} tmp_sim_set{5}};
                     end
@@ -113,7 +122,7 @@ classdef mi_ksg_sims < handle
             for key_ix = 1:length(core_keys)
                 data_ixs = find(strcmp(sim_data(:,4), core_keys{key_ix}) == 1); % find data entries that belong to core obj
                 core_ix = find(strcmp([obj.mi_core_arr(:,2)], core_keys(key_ix)) == 1); % find core obj in list of mi_core
-                set_core_data(obj.mi_core_arr{core_ix}, sim_data(data_ixs,1:3)); % send data back to respective mi_core objs
+                set_core_data(obj.mi_core_arr{core_ix}, sim_data(data_ixs,1:3), append); % send data back to respective mi_core objs
                 if obj.mi_core_arr{core_ix}.opt_k == 0
                     find_k_value(obj.mi_core_arr{core_ix}); % optimize k-value if opt_k == 0
                 end

@@ -10,7 +10,7 @@ classdef calc_count_behav < mi_analysis
     methods
        function obj = calc_count_behav(objData,vars)
 
-           if size(vars,1) ~= 2
+           if size(vars,1) ~= 1
                error('Expected two variables specified')
            end
 

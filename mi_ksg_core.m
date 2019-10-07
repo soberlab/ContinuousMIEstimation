@@ -9,7 +9,7 @@ classdef mi_ksg_core < handle
         x % matrix of x data
         y % matrix of y data
         k_values % array of k-values
-        mi_data % MI value, error estimate, data fraction
+        mi_data % MI value, error estimate, data fraction, k_value
         opt_k % optimized k value; if -1, only runs MI calculation without any error estimate
         data_fracs = 10 % number of data fractions
         
@@ -50,11 +50,14 @@ classdef mi_ksg_core < handle
         
         % These methods are used to interface with other classes for data
         % analysis and visualization        
-        function r = get_core_dataset(obj)
+        function r = get_core_dataset(obj, append)
+            % RC 20190918 SET FLAG for appending new k-values
+            
             % get cell array of data for MI calculation
             r = cell(0,4);
             if obj.opt_k < 0
                 % only run MI calculation without error estimate
+                % RC 20190918 SET FLAG for appending new k-values
                 for i=1:length(obj.k_values)
                     while 1
                         % generate unique key to track each simulation
@@ -68,18 +71,35 @@ classdef mi_ksg_core < handle
             else
                 % run MI calculation with error estimates
                 for i=1:length(obj.k_values)
-                    % create datasets for data fractions with unique key
-                    % to track each simulation
-                    r = cat(1, r, fractionate_data(obj, obj.k_values(i)));
+                    if append 
+                        mi_data = cell2mat(obj.mi_data);
+                        k_finished = unique(mi_data(:,4));
+                        if ismember(obj.k_values(i), k_finished)
+                            continue
+                        else
+                        % create datasets for data fractions with unique key
+                        % to track each simulation
+                        r = cat(1, r, fractionate_data(obj, obj.k_values(i)));
+                        end
+                    else
+                        % create datasets for data fractions with unique key
+                        % to track each simulation
+                        r = cat(1, r, fractionate_data(obj, obj.k_values(i)));
+                    end
                 end
             end 
         end
         
-        function set_core_data(obj, dataset)
+        function set_core_data(obj, dataset, append)
             % take sim_manager MI calculations and process results
             
             data_keys = unique([dataset(:,3)]); % extract simulation keys
+            
+            % RC 20190918: At this level, I should be able to either append
+            % the new data then sort or start from scratch. So we will want
+            % to propogate the flag to here. 
             tmp_mi_data = cell(0,4);
+            
             for key_ix = 1:length(data_keys) % iterate through each MI error estimation set
                 tmp_match = strcmp([dataset(:,3)], data_keys(key_ix)); % find MI calculations that correspond to same data fractions
                 count = sum(tmp_match); % determine number of data fractions
@@ -90,6 +110,10 @@ classdef mi_ksg_core < handle
                 
                 tmp_mi_data = cat(1, tmp_mi_data, {mean(mi) var(mi)^0.5 count k}); % append MI with error estimation
             end
+            if append
+                tmp_mi_data = cat(1,tmp_mi_data, obj.mi_data);
+            end
+            
             obj.mi_data = sortrows(tmp_mi_data,[4,3]);
         end
         
@@ -100,10 +124,12 @@ classdef mi_ksg_core < handle
             % calculate estimated error
             listSplitSizes = cell2mat(obj.mi_data(data_ixs,3));
             MIs = cell2mat(obj.mi_data(data_ixs,1));
-            listVariances = cell2mat(obj.mi_data(data_ixs,2));
+            listStddevs = cell2mat(obj.mi_data(data_ixs,2));
+            listVariances = listStddevs.^2;
             listVariances = listVariances(2:end);
             
             k = listSplitSizes(2:end);
+% ----------------OLD ERROR CODE------------------------------------------            
             variancePredicted = sum((k-1)./k.*listVariances)./sum((k-1));
             
             N = size(obj.x,2);
@@ -112,8 +138,20 @@ classdef mi_ksg_core < handle
             stdvar = sqrt(varS/N^2); %the error bars on our estimate of the variance
 
             % return MI value and error estimation
+           r.err = variancePredicted^.5;
+%-------------------------------------------------------------------------
+
+%---------------THIS IS WRONG. ---------------------------
+%             % Get the total size of the data. 
+%             N = size(obj.x,2);
+%             variancePredicted = sum((k-1)./k.*listVariances)./sum((k-1)); %The estimated variance of the mutual information at the full N
+%             Sml=variancePredicted*N;
+%             varS = 2*Sml^2/sum((k-1)); %Estimated variance of the variance of the estimate of the mutual information at full N
+%             stdvar = sqrt(varS/N^2); %the error bars on our estimate of the variance
+%             r.err = stdvar;
+%-------------------------------------------------------------------------
             r.mi = MIs(1);
-            r.err = stdvar^0.5;
+
         end
         
         function r = find_k_value(obj)

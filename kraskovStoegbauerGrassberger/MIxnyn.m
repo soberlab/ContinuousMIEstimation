@@ -84,7 +84,8 @@ zwsp=[x;y]';
 save(savestr, 'zwsp', '-ASCII');
 
 
-% execute C Program
+% BRYCE'S C PROGRAM CODE:
+% % execute C Program
 % check OS to determine how to call UNIX command
 if ispc
     unix_str = ['MIxnyn ',savestr,' ',num2str(Ndx),' ',num2str(Ndy),' ',num2str(N),' ',num2str(kneig)];
@@ -95,8 +96,21 @@ else
 end
 
 [a unout]=unix(unix_str);
-miout=str2num(unout);
 
-delete(savestr);
+% % RACHEL'S C PROGRAM CODE: 
+% % % execute C Programm MAC
+% % [a unout]=unix(['MIxnyn ',savestr,' ',num2str(Ndx),' ',num2str(Ndy),' ',num2str(N),' ',num2str(kneig)]);
+% % miout=str2num(unout);
+% % 
+% savepath = strcat('C:\Users\RBARKE2\Projects\MI_2_Neurons\ContinuousMIEstimation/',savestr);
+% 
+% % % 
+% % % execute C Programm WINDOWS
+% mcmd = ['C:\Cygwin\bin\bash.exe --login -c "''/cygdrive/c/Users/RBARKE2/Projects/MI-Breath-Muscles/ContinuousMIEstimation/kraskovStoegbauerGrassberger/a.exe'' ''savepath'' ' num2str(Ndx) ' ' num2str(Ndy) ' ' num2str(N) ' ' num2str(kneig) ];
+% [a unout]=system(mcmd);
+
+ miout=str2num(unout);
+ %delete(savestr);
+
 
 

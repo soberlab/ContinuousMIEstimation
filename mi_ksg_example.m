@@ -44,7 +44,7 @@ MI_isi.arrMIcore{1}.opt_k = 0;
 MI_isi.arrMIcore{1}.k_values = 3:8;
 
 % Run mutual information calculations
-calcMIs(MI_isi);
+calcMIs(MI_isi, 1);
 
 
 %% MAKE DATA PLOTS

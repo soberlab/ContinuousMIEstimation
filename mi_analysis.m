@@ -50,6 +50,15 @@ classdef mi_analysis < handle
             for iGroup = 1:size(xGroups,1)
                 x = xGroups{iGroup,1};
                 y = yGroups{iGroup,1};
+                
+                if obj.objData.reparamData == 1
+                    for iDimension = 1:size(x,1)
+                        x(iDimension,:) = obj.objData.reparameterizeData(x(iDimension,:));
+                    end
+                    for iDimension = 1:size(y,1)
+                        y(iDimension,:) = obj.objData.reparameterizeData(y(iDimension,:));
+                    end
+                end
 	          
                 % BC: Need to append new mi_core instance to the arrMICore object with associated information- DONE
                 % RC-  Is it a problem that we name the core object the same thing each iteration? 
@@ -66,6 +75,9 @@ classdef mi_analysis < handle
                 end
                 % RC: Why do we set the k values in the core object and in
                 % the arrMIcore?
+                % RC 20190918: Consider changing this so that a the k
+                % values are an optional input and for there to be a
+                % default. 
                 core1 = mi_ksg_core(obj.sim_manager, x, y, 3:8, 0);
 	            obj.arrMIcore(iGroup,:) = {core1 coeffs{iGroup,1} 0 key};
 	            % BC: The obj.findMIs function basically calls run_sims
@@ -74,9 +86,24 @@ classdef mi_analysis < handle
 	    % data from this object to the MIcore process. 
         end
         
-        function calcMIs(obj)
+        function calcMIs(obj, varargin)
+                        
+            % Set optional input: append 
+            % When append = True, then we compare the k_values in the core obj
+            % with those that have already been calculated. 
+            % If append = False, then we re-calculate everything for all
+            % the values of k. 
+            default_append = true;
+            %validate_append = @(x) assert(isboolean(x),'append must be a boolean value');
+            p = inputParser;            
+            p.addOptional('append', default_append);
+            
+            p.parse(varargin{:});
+            
+            append = p.Results.append;
+            
             disp('Calculating mutual information...');
-            run_sims(obj.sim_manager);
+            run_sims(obj.sim_manager, append);
         end
     end
 end
