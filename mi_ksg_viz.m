@@ -28,6 +28,14 @@ classdef mi_ksg_viz < handle
             
             xlim([min(xs)*0.8 max(xs)*1.1]);
             
+%             figure();
+%             plot(xs, err, 'bo');
+%             xlabel('Data Fraction (1/N)');
+%             ylabel('Mutual Info Std Dev');
+%             title('KSG - Variance Plot');
+%             
+%             xlim([0 11]);
+            
         end
         function r_plot = plot_k_dependence(obj, obj_core, f)
             % make k-dependence plot
