@@ -113,7 +113,7 @@ classdef mi_ksg_core < handle
 
             % return MI value and error estimation
             r.mi = MIs(1);
-            r.err = stdvar;
+            r.err = stdvar^0.5;
         end
         
         function r = find_k_value(obj)

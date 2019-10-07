@@ -381,7 +381,7 @@ classdef mi_data < handle
            %
            % if verbose > 1; disp([newline 'Running: dataByCycles' newline]); end
 
-           spike_ts = obj.neurons{dataNum};
+           spike_ts = obj.neurons{dataNum{1}};
 %            cycle_ts = obj.cycleTimes{1,1};
            cycle_ts = obj.obj_behav.cycleTimes'*1000.; % BC20190820
 
@@ -420,7 +420,7 @@ classdef mi_data < handle
        end
        
        function r = getCount(obj, dataNum)
-           spike_ts = obj.neurons{dataNum};
+           spike_ts = obj.neurons{dataNum{1}};
 %            cycle_ts = obj.cycleTimes{1,1};
             cycle_ts = obj.obj_behav.cycleTimes'*1000.; % BC 20190820
 
